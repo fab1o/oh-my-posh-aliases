@@ -8,7 +8,7 @@
           "background": "transparent",
           "foreground": "p:greenbright",
           "style": "plain",
-          "template": "➜⠀",
+          "template": "➜ ",
           "type": "text"
         },
         {
@@ -18,7 +18,7 @@
             "style": "folder"
           },
           "style": "plain",
-          "template": "<b>{{ .Path }}</b>⠀",
+          "template": "<b>{{ .Path }}</b> ",
           "type": "path"
         },
         {
@@ -36,7 +36,7 @@
             "fetch_status": true
           },
           "style": "plain",
-          "template": "<b>{{if .BranchStatus}}{{.BranchStatus}}{{ end }}:({{.HEAD}}){{ if or (.Working.Changed) (.Staging.Changed) }}✗{{ end }}⠀</b>",
+          "template": "<b>{{if .BranchStatus}}{{.BranchStatus}}{{ end }}:({{.HEAD}}){{ if or (.Working.Changed) (.Staging.Changed) }}✗{{ end }} </b>",
           "type": "git"
         },
         {

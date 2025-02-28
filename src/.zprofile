@@ -331,7 +331,7 @@ push() {
 		echo "\e[31mfatal:\e[0m not a git repository"
 		return 0;
 	fi
-	
+
 	if [ $Z_PR_RUN_TEST -eq 1 ]; then
 		eval $Z_PACKAGE_MANAGER test
 
@@ -343,7 +343,7 @@ push() {
 
 	local MY_BRANCH=$(git branch --show-current)
 
-	git push --no-verify --set-upstream origin $MY_BRANCH
+	git push --no-verify --tags --set-upstream origin $MY_BRANCH
 }
 stash() {
 	if [ ! -d ".git" ]; then
@@ -365,7 +365,7 @@ tag() {
 		return 0;
 	fi
 
-	git tag --annotate '$1' --message '$1'
+	git tag --annotate $1 --message $1
 }
 
 tags() {

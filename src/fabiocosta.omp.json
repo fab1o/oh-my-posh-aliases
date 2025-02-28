@@ -46,7 +46,7 @@
             "always_enabled": true
           },
           "style": "plain",
-          "template": "<b>{{.FormattedMs}}</b>",
+          "template": "<b>{{.FormattedMs}}~</b>",
           "type": "executiontime"
         }
       ],

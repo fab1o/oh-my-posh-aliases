@@ -1,5 +1,7 @@
 # @fab1o/oh-my-posh-aliases
 
+![theme screenshot](doc/theme.png)
+
 Oh My Posh's Theme + Aliases + Functions
 
 Loosely based on [robbyrussell](https://ohmyposh.dev/docs/themes#robbyrussell) oh-my-posh's theme and a configurable set of aliases and functions to pump your Z (zsh) shell.
@@ -10,7 +12,7 @@ This theme fixes an [issue](https://github.com/JanDeDobbeleer/oh-my-posh/issues/
 
 Support for **Z shell (Zsh) only**. Type `help` to print documentation below:
 
-![terminal screenshot](doc/screenshot1.png)
+![terminal help screenshot](doc/terminal_help.png)
 
 ## Requirements
 

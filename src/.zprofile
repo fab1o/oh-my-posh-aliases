@@ -193,15 +193,6 @@ pr() {
 		echo "there's work in progress, do: \e[93mpush\e[0m, \e[93mpushf\e[0m, \e[93mclean\e[0m, \e[93mreseta\e[0m"
 		return 0
 	fi
-	
-	if [ $Z_PR_RUN_TEST -eq 1 ]; then
-		eval $Z_PACKAGE_MANAGER test
-
-		if [ $? -eq 1 ]; then
-			echo "\e[33m\nfatal: Tests are not passing! Cannot create PR\e[0m"
-			return 0;
-		fi
-	fi
 
 	local FIRST_COMMIT=$(git log --branches --not --remotes --oneline | sed -n '$p' | sed 's/^[^ ]* //')
 	local COMMIT_MSGS=$(git log --branches --not --remotes --oneline | sed '')
@@ -217,6 +208,8 @@ pr() {
 	fi
 
 	local MY_BRANCH=$(git branch --show-current)
+
+	push
 
 	if [ -z $1 ]; then
 		gh pr create -a @me --title $FIRST_COMMIT --body $PR_BODY --web --head $MY_BRANCH

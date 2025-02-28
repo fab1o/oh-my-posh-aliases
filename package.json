@@ -1,0 +1,19 @@
+{
+  "author": "Fabio Costa <6663243+fab1o@users.noreply.github.com>",
+  "bugs": {
+    "url": "https://github.com/fab1o/oh-my-posh-aliases/issues"
+  },
+  "description": "My own oh-my-posh theme loosely based on robbyrussell's and a full configurable set of aliases and functions to pump your Z (zsh) shell",
+  "homepage": "https://github.com/fab1o/oh-my-posh-aliases#readme",
+  "license": "GPL-3.0-or-later",
+  "main": "test.js",
+  "name": "oh-my-posh-aliases",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/fab1o/oh-my-posh-aliases.git"
+  },
+  "scripts": {
+    "test": "node test"
+  },
+  "version": "1.0.0"
+}

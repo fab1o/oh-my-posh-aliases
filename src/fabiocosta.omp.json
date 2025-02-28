@@ -76,11 +76,6 @@
     "orange": "#F07623",
     "purple": "#83769c"
   },
-  "secondary_prompt": {
-    "background": "transparent",
-    "foreground": "p:gruvgreen",
-    "template": "<p:gruvyellow,transparent></><,p:gruvyellow> > </><p:gruvyellow,transparent></> "
-  },
   "upgrade": {
     "auto": false,
     "interval": "168h",

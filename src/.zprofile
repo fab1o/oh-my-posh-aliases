@@ -62,13 +62,13 @@ help() {
 	echo " $GIT_COR_EXEC push \e[0m\t\t = git push no-verify + tags"
 	echo " $GIT_COR_EXEC pushf \e[0m\t = git push + force"
 	echo " $GIT_COR_EXEC rev \$1\e[0m\t = review branch"
-	echo " $GIT_COR_EXEC stash \$1 \e[0m\t = git stash push"
+	echo " $GIT_COR_EXEC stash \$1 \e[0m\t = stash all files"
 	echo " $GIT_COR_EXEC st \e[0m\t\t = git status"
-	echo " $GIT_COR_EXEC tag \$1 \e[0m\t = git tag"
+	echo " $GIT_COR_EXEC tag \$1\e[0m\t = git tag"
 	echo " $GIT_COR_EXEC tags \e[0m\t\t = list latest tag"
 	echo "$TITLE_COR -- Git clean branch ---------------------------------------- \e[0m"
 	echo " $GIT_COR_EXEC clean\e[0m\t\t = git clean + restore"
-	echo " $GIT_COR_EXEC reset \e[0m\t = unstage files"
+	echo " $GIT_COR_EXEC reset \$1\e[0m\t = unstage files or all"
 	echo " $GIT_COR_EXEC reseta \e[0m\t = git reset hard"
 	echo " $GIT_COR_EXEC reset1 \e[0m\t = git reset soft HEAD~1"
 	echo " $GIT_COR_EXEC reset2 \e[0m\t = git reset soft HEAD~2"
@@ -289,7 +289,6 @@ alias pushf="git push --no-verify --tags --force-with-lease"
 alias glog="clear && git log -15 --graph --abbrev-commit --pretty=format:'%C(magenta)%h%Creset ~%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset'"
 alias mc="git add . && git merge --continue"
 alias rc="git add . && git rebase --continue"
-alias reset="git restore --staged ${1:-.}"
 alias reset1="git reset --soft HEAD~1"
 alias reset2="git reset --soft HEAD~2"
 alias reset3="git reset --soft HEAD~3"
@@ -347,15 +346,20 @@ push() {
 	git push --no-verify --set-upstream origin $MY_BRANCH
 }
 stash() {
-	if [[ -z $1 ]]; then
-		echo "type: \e[93mstash <name>\e[0m"
+	if [ ! -d ".git" ]; then
+		echo "\e[31mfatal:\e[0m not a git repository"
 		return 0;
 	fi
 
-	git stash push --include-untracked --message '$1'
+	git stash push --include-untracked --message "${1:-.}"
 }
 
 tag() {
+	if [ ! -d ".git" ]; then
+		echo "\e[31mfatal:\e[0m not a git repository"
+		return 0;
+	fi
+	
 	if [[ -z $1 ]]; then
 		echo "type: \e[93mtag <name>\e[0m"
 		return 0;
@@ -383,6 +387,15 @@ tags() {
 	else
 		echo $TAG
 	fi
+}
+
+reset() {
+	if [ ! -d ".git" ]; then
+		echo "\e[31mfatal:\e[0m not a git repository"
+		return 0;
+	fi
+
+  git restore --staged "${1:-.}"
 }
 
 reseta() {

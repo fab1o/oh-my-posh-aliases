@@ -10,7 +10,7 @@ This theme fixes an [issue](https://github.com/JanDeDobbeleer/oh-my-posh/issues/
 
 Support for **Z shell (Zsh) only**. Type `help` to print documentation below:
 
-![screenshot](docs/screenshot.png)
+![terminal screenshot](doc/terminalscreen.png)
 
 ## Requirements
 

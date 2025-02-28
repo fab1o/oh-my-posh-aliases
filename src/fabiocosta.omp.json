@@ -36,23 +36,7 @@
             "fetch_status": true
           },
           "style": "plain",
-          "template": "<b>{{if .BranchStatus}}{{.BranchStatus}}{{ end }}:({{.HEAD}})</b>",
-          "type": "git"
-        },
-        {
-          "background": "transparent",
-          "foreground": "p:gruvblue",
-          "foreground_templates": [
-            "{{ if and (gt .Behind 0) (gt .Ahead 0) }}p:gruvredlight{{ end }}",
-            "{{ if gt .Ahead 0 }}p:gruvyellow{{ end }}",
-            "{{ if gt .Behind 0 }}p:gruvmagentalight{{ end }}",
-            "{{ if or (.Working.Changed) (.Staging.Changed) }}p:orange{{ end }}"
-          ],
-          "properties": {
-            "fetch_status": true
-          },
-          "style": "plain",
-          "template": "{{ if or (.Working.Changed) (.Staging.Changed) }}✗{{ end }}⠀",
+          "template": "<b>{{if .BranchStatus}}{{.BranchStatus}}{{ end }}:({{.HEAD}}){{ if or (.Working.Changed) (.Staging.Changed) }}✗{{ end }}⠀</b>",
           "type": "git"
         },
         {

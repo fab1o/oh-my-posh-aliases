@@ -1,0 +1,107 @@
+{
+  "$schema": "https://raw.githubusercontent.com/JanDeDobbeleer/oh-my-posh/main/themes/schema.json",
+  "blocks": [
+    {
+      "alignment": "left",
+      "segments": [
+        {
+          "background": "transparent",
+          "foreground": "p:greenbright",
+          "style": "plain",
+          "template": "➜⠀",
+          "type": "text"
+        },
+        {
+          "background": "transparent",
+          "foreground": "p:gruvcyanlight",
+          "properties": {
+            "style": "folder"
+          },
+          "style": "plain",
+          "template": "<b>{{ .Path }}</b>⠀",
+          "type": "path"
+        },
+        {
+          "background": "transparent",
+          "foreground": "p:gruvblue",
+          "foreground_templates": [
+            "{{ if and (gt .Behind 0) (gt .Ahead 0) }}p:gruvredlight{{ end }}",
+            "{{ if gt .Ahead 0 }}p:gruvyellow{{ end }}",
+            "{{ if gt .Behind 0 }}p:gruvmagentalight{{ end }}",
+            "{{ if or (.Working.Changed) (.Staging.Changed) }}p:orange{{ end }}"
+          ],
+          "properties": {
+            "branch_icon": "",
+            "branch_template": "{{ .Branch }}",
+            "fetch_status": true
+          },
+          "style": "plain",
+          "template": "<b>{{if .BranchStatus}}{{.BranchStatus}}{{ end }}:({{.HEAD}})</b>",
+          "type": "git"
+        },
+        {
+          "background": "transparent",
+          "foreground": "p:gruvblue",
+          "foreground_templates": [
+            "{{ if and (gt .Behind 0) (gt .Ahead 0) }}p:gruvredlight{{ end }}",
+            "{{ if gt .Ahead 0 }}p:gruvyellow{{ end }}",
+            "{{ if gt .Behind 0 }}p:gruvmagentalight{{ end }}",
+            "{{ if or (.Working.Changed) (.Staging.Changed) }}p:orange{{ end }}"
+          ],
+          "properties": {
+            "fetch_status": true
+          },
+          "style": "plain",
+          "template": "{{ if or (.Working.Changed) (.Staging.Changed) }}✗{{ end }}⠀",
+          "type": "git"
+        },
+        {
+          "background": "transparent",
+          "foreground": "p:purple",
+          "properties": {
+            "always_enabled": true
+          },
+          "style": "plain",
+          "template": "<b>{{.FormattedMs}}</b>",
+          "type": "executiontime"
+        }
+      ],
+      "type": "prompt"
+    }
+  ],
+  "console_title_template": "{{ .Shell }} in {{ .Folder }}",
+  "final_space": true,
+  "palette": {
+    "greenbright": "#00FF00",
+    "gruvblack": "#353535",
+    "gruvblacklight": "#a09588",
+    "gruvblue": "#649498",
+    "gruvbluelight": "#9ab2a8",
+    "gruvcyan": "#84a981",
+    "gruvcyanlight": "#a8ce94",
+    "gruvgreen": "#a7a53d",
+    "gruvgreenlight": "#c4c44e",
+    "gruvmagenta": "#b57b96",
+    "gruvmagentalight": "#d29daa",
+    "gruvred": "#c64631",
+    "gruvredlight": "#eb6b4e",
+    "gruvwhite": "#b4a998",
+    "gruvwhitelight": "#ece1c2",
+    "gruvyellow": "#d7aa46",
+    "gruvyellowlight": "#f3c958",
+    "orange": "#F07623",
+    "purple": "#83769c"
+  },
+  "secondary_prompt": {
+    "background": "transparent",
+    "foreground": "p:gruvgreen",
+    "template": "<p:gruvyellow,transparent></><,p:gruvyellow> > </><p:gruvyellow,transparent></> "
+  },
+  "upgrade": {
+    "auto": false,
+    "interval": "168h",
+    "notice": true,
+    "source": "cdn"
+  },
+  "version": 3
+}

@@ -182,11 +182,6 @@ e2e() {
 
 # Creating PRs =============================================================
 pr() {
-	if [ ! -d ".git" ]; then
-		echo "\e[31mfatal:\e[0m not a git repository"
-		return 0;
-	fi
-
 	local STATUS=$(git status --porcelain)
 
 	if [[ -n "$STATUS" ]]; then
@@ -194,9 +189,74 @@ pr() {
 		return 0
 	fi
 
-	local FIRST_COMMIT=$(git log --branches --not --remotes --oneline | sed -n '$p' | sed 's/^[^ ]* //')
-	local COMMIT_MSGS=$(git log --branches --not --remotes --oneline | sed '')
+	# Initialize an empty string to store the commit details
+	local COMMIT_MSGS=""
 
+	local REMOTE_BRANCH=$(git for-each-ref --format='%(upstream:short)' "$(git symbolic-ref -q HEAD)" origin/mainline)
+
+	# Get the current branch name
+	local CURRENT_BRANCH=$(git branch --show-current)
+
+	# Local branch has been pushed to remote
+	if [[ -n "$REMOTE_BRANCH" ]]; then
+		# Get the current user's name (author)
+		local current_author=$(git config --get user.email)
+		# Get the current commit hash where origin/HEAD is pointing
+		local origin_head_commit=$(git rev-parse origin/HEAD)
+
+		# Loop through all commits in the current branch using git log (newest to oldest)
+		git log --pretty=format:'%H | %ae | %s' $CURRENT_BRANCH | while IFS= read -r line; do
+		    # Extract commit hash, commit author, and commit message using the '|' separator
+	    local commit_hash=$(echo "$line" | cut -d'|' -f1 | xargs)
+	    local commit_author=$(echo "$line" | cut -d'|' -f2 | xargs)
+	    local commit_message=$(echo "$line" | cut -d'|' -f3- | xargs)
+
+			# Check if the commit belongs to the current branch
+			if ! git branch --contains "$commit_hash" | grep -q "\b$CURRENT_BRANCH\b"; then
+			  break
+			fi
+
+	    # Stop if the commit is the origin/HEAD commit
+	    if [[ "$commit_hash" == "$origin_head_commit" ]]; then
+	        break
+	    fi
+	    # Check if the commit's author matches the current user
+	    if [[ "$commit_author" != "$current_author" ]]; then
+	        break
+	    fi
+
+	    # Add the commit hash and message to the list
+	    COMMIT_MSGS+="$commit_hash $commit_message"$'\n'
+		done
+	else
+		# Local branch has not yet been pushed to remote
+
+		git log --branches --not --remotes --oneline --pretty=format:'%H | %s' | while IFS= read -r line; do
+	    local commit_hash=$(echo "$line" | cut -d'|' -f1 | xargs)
+	    local commit_message=$(echo "$line" | cut -d'|' -f2- | xargs)
+
+		  # # Use grep with a regular expression to find all branches referencing the commit hash
+			# local branches=$(grep -R "$commit_hash" .git/refs/heads | sed 's|.*/heads/||' | cut -d: -f1 | sed 's|$|\||')
+
+			# if ! echo "$branches" | grep -q "$CURRENT_BRANCH|"; then
+			# 	break
+			# fi
+			# Check if the commit belongs to the current branch
+			if ! git branch --contains "$commit_hash" | grep -q "\b$CURRENT_BRANCH\b"; then
+			  break
+			fi
+
+	    # Add the commit hash and message to the list
+			COMMIT_MSGS+="$commit_hash $commit_message"$'\n'
+		done
+	fi
+
+	if [[ ! -n "$COMMIT_MSGS" ]]; then
+		echo "No work was done"
+		return 0;
+	fi
+
+	local FIRST_COMMIT=$(git log --branches --not --remotes --oneline | sed -n '$p' | sed 's/^[^ ]* //')
 	local PR_TEMPLATE=$(cat .github/pull_request_template.md)
 
 	if [ $Z_PR_APPEND -eq 1 ]; then
@@ -279,7 +339,7 @@ clone() {
   code .
 }
 
-# Git
+# Git =========================================================================
 alias add="git add $1"
 alias abort="GIT_EDITOR=true git rebase --abort -q && git merge --abort -q"
 alias clean="git clean -fd -q && git restore -q ."
@@ -298,11 +358,6 @@ alias st="git status"
 
 # Commits =======================================================================
 commita() {
-	if [ ! -d ".git" ]; then
-		echo "\e[31mfatal:\e[0m not a git repository"
-		return 0;
-	fi
-
 	if [ -z $1 ]; then
 		echo "type: \e[93mcommit <message>\e[0m"
 		return 0;
@@ -313,11 +368,6 @@ commita() {
 }
 
 commit() {
-	if [ ! -d ".git" ]; then
-		echo "\e[31mfatal:\e[0m not a git repository"
-		return 0;
-	fi
-
 	if [ -z $1 ]; then
 		echo "type: \e[93mcommit <message>\e[0m"
 		return 0;
@@ -327,11 +377,6 @@ commit() {
 }
 
 push() {
-	if [ ! -d ".git" ]; then
-		echo "\e[31mfatal:\e[0m not a git repository"
-		return 0;
-	fi
-
 	if [ $Z_PR_RUN_TEST -eq 1 ]; then
 		eval $Z_PACKAGE_MANAGER test
 
@@ -345,21 +390,12 @@ push() {
 
 	git push --no-verify --set-upstream origin $MY_BRANCH
 }
-stash() {
-	if [ ! -d ".git" ]; then
-		echo "\e[31mfatal:\e[0m not a git repository"
-		return 0;
-	fi
 
+stash() {
 	git stash push --include-untracked --message "${1:-.}"
 }
 
 tag() {
-	if [ ! -d ".git" ]; then
-		echo "\e[31mfatal:\e[0m not a git repository"
-		return 0;
-	fi
-	
 	if [[ -z $1 ]]; then
 		echo "type: \e[93mtag <name>\e[0m"
 		return 0;
@@ -369,11 +405,6 @@ tag() {
 }
 
 tags() {
-	if [ ! -d ".git" ]; then
-		echo "\e[31mfatal:\e[0m not a git repository"
-		return 0;
-	fi
-
 	git fetch --quiet --tags --all --prune --prune-tags
 
 	local TAG=$(git for-each-ref refs/tags --sort=-taggerdate --format='%(refname:short)' --count=1 | sed '')
@@ -390,20 +421,10 @@ tags() {
 }
 
 reset() {
-	if [ ! -d ".git" ]; then
-		echo "\e[31mfatal:\e[0m not a git repository"
-		return 0;
-	fi
-
   git restore --staged "${1:-.}"
 }
 
 reseta() {
-	if [ ! -d ".git" ]; then
-		echo "\e[31mfatal:\e[0m not a git repository"
-		return 0;
-	fi
-
 	local MY_BRANCH=$(git branch --show-current)
 
 	git reset --hard origin/$MY_BRANCH
@@ -415,22 +436,13 @@ reseta() {
 # List branches =======================================================================
 # list remote branches that contains an optional text and adds a link to the branch in github
 glr() {
-	if [ ! -d ".git" ]; then
-		echo "\e[31mfatal:\e[0m not a git repository"
-		return 0;
-	fi
-
 	git branch -r --list "*$1*" --sort=authordate --format='%(authordate:format:%m-%d-%Y) %(align:17,left)%(authorname)%(end) %(refname:strip=3)' | sed \
     -e 's/\([0-9]*-[0-9]*-[0-9]*\)/\x1b[32m\1\x1b[0m/' \
     -e 's/\([^\ ]*\)$/\x1b[34m\x1b]8;;https:\/\/github.com\/wmgtech\/wmg2-one-app\/tree\/\1\x1b\\\1\x1b]8;;\x1b\\\x1b[0m/'
 }
+
 # list only local branches that contains an optional text
 gll() {
-	if [ ! -d ".git" ]; then
-		echo "\e[31mfatal:\e[0m not a git repository"
-		return 0;
-	fi
-	
 	git branch --list "*$1*" --sort=authordate --format="%(authordate:format:%m-%d-%Y) %(align:17,left)%(authorname)%(end) %(refname:strip=2)" | sed \
 		-e 's/\([0-9]*-[0-9]*-[0-9]*\)/\x1b[32m\1\x1b[0m/' \
 	  -e 's/\([^ ]*\)$/\x1b[34m\1\x1b[0m/'
@@ -440,11 +452,6 @@ gll() {
 # Switch branches =======================================================================
 # check out a branch or create a new one if $2 is given, can also pass -b to create the branch
 ck() {
-	if [ ! -d ".git" ]; then
-		echo "\e[31mfatal:\e[0m not a git repository"
-		return 0;
-	fi
-
 	if [ -z $1 ]; then
 		echo "type: \e[93mck <branch_name>\e[0m \e[33m[<base_name>]\e[0m"
 		return 0;
@@ -495,11 +502,6 @@ ck() {
 
 # go to default branch stablished in config
 main() {
-	if [ ! -d ".git" ]; then
-		echo "\e[31mfatal:\e[0m not a git repository"
-		return 0;
-	fi
-	
 	local MY_BRANCH=$(git branch --show-current)
 	local DEFAULT_MAIN_BRANCH=$(git config --get init.defaultBranch)
 
@@ -513,11 +515,6 @@ main() {
 # Merging & Rebasing ========================================================================
 # rebase $1 or main
 rebase() {
-	if [ ! -d ".git" ]; then
-		echo "\e[31mfatal:\e[0m not a git repository"
-		return 0;
-	fi
-
 	local MY_BRANCH=$(git branch --show-current)
 	local DEFAULT_MAIN_BRANCH=$(git config --get init.defaultBranch)
 	local MAIN_BRANCH="${1:-$DEFAULT_MAIN_BRANCH}"
@@ -542,11 +539,6 @@ rebase() {
 
 # merge $1 or main
 merge() {
-	if [ ! -d ".git" ]; then
-		echo "\e[31mfatal:\e[0m not a git repository"
-		return 0;
-	fi
-	
 	local MY_BRANCH=$(git branch --show-current)
 	local DEFAULT_MAIN_BRANCH=$(git config --get init.defaultBranch)
 	local MAIN_BRANCH="${1:-$DEFAULT_MAIN_BRANCH}"
@@ -571,11 +563,6 @@ merge() {
 
 # Delete local branches ===========================================================
 prune() {
-	if [ ! -d ".git" ]; then
-		echo "\e[31mfatal:\e[0m not a git repository"
-		return 0;
-	fi
-	
 	local STATUS=$(git status --porcelain)
 	local DEFAULT_MAIN_BRANCH=$(git config --get init.defaultBranch)
 
@@ -589,11 +576,6 @@ prune() {
 
 # list branches and select one to delete or delete $1
 delb() {
-	if [ ! -d ".git" ]; then
-		echo "\e[31mfatal:\e[0m not a git repository"
-		return 0;
-	fi
-	
 	if [[ -n "$1" ]]; then
 		delb1 $1
 		return 0;
@@ -619,11 +601,6 @@ delb() {
 }
 
 delb1() {
-	if [ ! -d ".git" ]; then
-		echo "\e[31mfatal:\e[0m not a git repository"
-		return 0;
-	fi
-	
 	local MY_BRANCH=$(git branch --show-current)
 	local STATUS=$(git status --porcelain)
 

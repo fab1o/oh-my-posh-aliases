@@ -189,9 +189,74 @@ pr() {
 		return 0
 	fi
 
-	local FIRST_COMMIT=$(git log --branches --not --remotes --oneline | sed -n '$p' | sed 's/^[^ ]* //')
-	local COMMIT_MSGS=$(git log --branches --not --remotes --oneline | sed '')
+	# Initialize an empty string to store the commit details
+	local COMMIT_MSGS=""
 
+	local REMOTE_BRANCH=$(git for-each-ref --format='%(upstream:short)' "$(git symbolic-ref -q HEAD)" origin/mainline)
+
+	# Get the current branch name
+	local CURRENT_BRANCH=$(git branch --show-current)
+
+	# Local branch has been pushed to remote
+	if [[ -n "$REMOTE_BRANCH" ]]; then
+		# Get the current user's name (author)
+		local current_author=$(git config --get user.email)
+		# Get the current commit hash where origin/HEAD is pointing
+		local origin_head_commit=$(git rev-parse origin/HEAD)
+
+		# Loop through all commits in the current branch using git log (newest to oldest)
+		git log --pretty=format:'%H | %ae | %s' $CURRENT_BRANCH | while IFS= read -r line; do
+		    # Extract commit hash, commit author, and commit message using the '|' separator
+	    local commit_hash=$(echo "$line" | cut -d'|' -f1 | xargs)
+	    local commit_author=$(echo "$line" | cut -d'|' -f2 | xargs)
+	    local commit_message=$(echo "$line" | cut -d'|' -f3- | xargs)
+
+			# Check if the commit belongs to the current branch
+			if ! git branch --contains "$commit_hash" | grep -q "\b$CURRENT_BRANCH\b"; then
+			  break
+			fi
+
+	    # Stop if the commit is the origin/HEAD commit
+	    if [[ "$commit_hash" == "$origin_head_commit" ]]; then
+	        break
+	    fi
+	    # Check if the commit's author matches the current user
+	    if [[ "$commit_author" != "$current_author" ]]; then
+	        break
+	    fi
+
+	    # Add the commit hash and message to the list
+	    COMMIT_MSGS+="$commit_hash $commit_message"$'\n'
+		done
+	else
+		# Local branch has not yet been pushed to remote
+
+		git log --branches --not --remotes --oneline --pretty=format:'%H | %s' | while IFS= read -r line; do
+	    local commit_hash=$(echo "$line" | cut -d'|' -f1 | xargs)
+	    local commit_message=$(echo "$line" | cut -d'|' -f2- | xargs)
+
+		  # # Use grep with a regular expression to find all branches referencing the commit hash
+			# local branches=$(grep -R "$commit_hash" .git/refs/heads | sed 's|.*/heads/||' | cut -d: -f1 | sed 's|$|\||')
+
+			# if ! echo "$branches" | grep -q "$CURRENT_BRANCH|"; then
+			# 	break
+			# fi
+			# Check if the commit belongs to the current branch
+			if ! git branch --contains "$commit_hash" | grep -q "\b$CURRENT_BRANCH\b"; then
+			  break
+			fi
+
+	    # Add the commit hash and message to the list
+			COMMIT_MSGS+="$commit_hash $commit_message"$'\n'
+		done
+	fi
+
+	if [[ ! -n "$COMMIT_MSGS" ]]; then
+		echo "No work was done"
+		return 0;
+	fi
+
+	local FIRST_COMMIT=$(git log --branches --not --remotes --oneline | sed -n '$p' | sed 's/^[^ ]* //')
 	local PR_TEMPLATE=$(cat .github/pull_request_template.md)
 
 	if [ $Z_PR_APPEND -eq 1 ]; then

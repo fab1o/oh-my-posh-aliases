@@ -182,11 +182,6 @@ e2e() {
 
 # Creating PRs =============================================================
 pr() {
-	if [ ! -d ".git" ]; then
-		echo "\e[31mfatal:\e[0m not a git repository"
-		return 0;
-	fi
-
 	local STATUS=$(git status --porcelain)
 
 	if [[ -n "$STATUS" ]]; then
@@ -298,11 +293,6 @@ alias st="git status"
 
 # Commits =======================================================================
 commita() {
-	if [ ! -d ".git" ]; then
-		echo "\e[31mfatal:\e[0m not a git repository"
-		return 0;
-	fi
-
 	if [ -z $1 ]; then
 		echo "type: \e[93mcommit <message>\e[0m"
 		return 0;
@@ -313,11 +303,6 @@ commita() {
 }
 
 commit() {
-	if [ ! -d ".git" ]; then
-		echo "\e[31mfatal:\e[0m not a git repository"
-		return 0;
-	fi
-
 	if [ -z $1 ]; then
 		echo "type: \e[93mcommit <message>\e[0m"
 		return 0;
@@ -327,11 +312,6 @@ commit() {
 }
 
 push() {
-	if [ ! -d ".git" ]; then
-		echo "\e[31mfatal:\e[0m not a git repository"
-		return 0;
-	fi
-
 	if [ $Z_PR_RUN_TEST -eq 1 ]; then
 		eval $Z_PACKAGE_MANAGER test
 
@@ -345,21 +325,12 @@ push() {
 
 	git push --no-verify --set-upstream origin $MY_BRANCH
 }
-stash() {
-	if [ ! -d ".git" ]; then
-		echo "\e[31mfatal:\e[0m not a git repository"
-		return 0;
-	fi
 
+stash() {
 	git stash push --include-untracked --message "${1:-.}"
 }
 
 tag() {
-	if [ ! -d ".git" ]; then
-		echo "\e[31mfatal:\e[0m not a git repository"
-		return 0;
-	fi
-	
 	if [[ -z $1 ]]; then
 		echo "type: \e[93mtag <name>\e[0m"
 		return 0;
@@ -369,11 +340,6 @@ tag() {
 }
 
 tags() {
-	if [ ! -d ".git" ]; then
-		echo "\e[31mfatal:\e[0m not a git repository"
-		return 0;
-	fi
-
 	git fetch --quiet --tags --all --prune --prune-tags
 
 	local TAG=$(git for-each-ref refs/tags --sort=-taggerdate --format='%(refname:short)' --count=1 | sed '')
@@ -390,20 +356,10 @@ tags() {
 }
 
 reset() {
-	if [ ! -d ".git" ]; then
-		echo "\e[31mfatal:\e[0m not a git repository"
-		return 0;
-	fi
-
   git restore --staged "${1:-.}"
 }
 
 reseta() {
-	if [ ! -d ".git" ]; then
-		echo "\e[31mfatal:\e[0m not a git repository"
-		return 0;
-	fi
-
 	local MY_BRANCH=$(git branch --show-current)
 
 	git reset --hard origin/$MY_BRANCH
@@ -415,22 +371,13 @@ reseta() {
 # List branches =======================================================================
 # list remote branches that contains an optional text and adds a link to the branch in github
 glr() {
-	if [ ! -d ".git" ]; then
-		echo "\e[31mfatal:\e[0m not a git repository"
-		return 0;
-	fi
-
 	git branch -r --list "*$1*" --sort=authordate --format='%(authordate:format:%m-%d-%Y) %(align:17,left)%(authorname)%(end) %(refname:strip=3)' | sed \
     -e 's/\([0-9]*-[0-9]*-[0-9]*\)/\x1b[32m\1\x1b[0m/' \
     -e 's/\([^\ ]*\)$/\x1b[34m\x1b]8;;https:\/\/github.com\/wmgtech\/wmg2-one-app\/tree\/\1\x1b\\\1\x1b]8;;\x1b\\\x1b[0m/'
 }
+
 # list only local branches that contains an optional text
 gll() {
-	if [ ! -d ".git" ]; then
-		echo "\e[31mfatal:\e[0m not a git repository"
-		return 0;
-	fi
-	
 	git branch --list "*$1*" --sort=authordate --format="%(authordate:format:%m-%d-%Y) %(align:17,left)%(authorname)%(end) %(refname:strip=2)" | sed \
 		-e 's/\([0-9]*-[0-9]*-[0-9]*\)/\x1b[32m\1\x1b[0m/' \
 	  -e 's/\([^ ]*\)$/\x1b[34m\1\x1b[0m/'
@@ -440,11 +387,6 @@ gll() {
 # Switch branches =======================================================================
 # check out a branch or create a new one if $2 is given, can also pass -b to create the branch
 ck() {
-	if [ ! -d ".git" ]; then
-		echo "\e[31mfatal:\e[0m not a git repository"
-		return 0;
-	fi
-
 	if [ -z $1 ]; then
 		echo "type: \e[93mck <branch_name>\e[0m \e[33m[<base_name>]\e[0m"
 		return 0;
@@ -495,11 +437,6 @@ ck() {
 
 # go to default branch stablished in config
 main() {
-	if [ ! -d ".git" ]; then
-		echo "\e[31mfatal:\e[0m not a git repository"
-		return 0;
-	fi
-	
 	local MY_BRANCH=$(git branch --show-current)
 	local DEFAULT_MAIN_BRANCH=$(git config --get init.defaultBranch)
 
@@ -513,11 +450,6 @@ main() {
 # Merging & Rebasing ========================================================================
 # rebase $1 or main
 rebase() {
-	if [ ! -d ".git" ]; then
-		echo "\e[31mfatal:\e[0m not a git repository"
-		return 0;
-	fi
-
 	local MY_BRANCH=$(git branch --show-current)
 	local DEFAULT_MAIN_BRANCH=$(git config --get init.defaultBranch)
 	local MAIN_BRANCH="${1:-$DEFAULT_MAIN_BRANCH}"
@@ -542,11 +474,6 @@ rebase() {
 
 # merge $1 or main
 merge() {
-	if [ ! -d ".git" ]; then
-		echo "\e[31mfatal:\e[0m not a git repository"
-		return 0;
-	fi
-	
 	local MY_BRANCH=$(git branch --show-current)
 	local DEFAULT_MAIN_BRANCH=$(git config --get init.defaultBranch)
 	local MAIN_BRANCH="${1:-$DEFAULT_MAIN_BRANCH}"
@@ -571,11 +498,6 @@ merge() {
 
 # Delete local branches ===========================================================
 prune() {
-	if [ ! -d ".git" ]; then
-		echo "\e[31mfatal:\e[0m not a git repository"
-		return 0;
-	fi
-	
 	local STATUS=$(git status --porcelain)
 	local DEFAULT_MAIN_BRANCH=$(git config --get init.defaultBranch)
 
@@ -589,11 +511,6 @@ prune() {
 
 # list branches and select one to delete or delete $1
 delb() {
-	if [ ! -d ".git" ]; then
-		echo "\e[31mfatal:\e[0m not a git repository"
-		return 0;
-	fi
-	
 	if [[ -n "$1" ]]; then
 		delb1 $1
 		return 0;
@@ -619,11 +536,6 @@ delb() {
 }
 
 delb1() {
-	if [ ! -d ".git" ]; then
-		echo "\e[31mfatal:\e[0m not a git repository"
-		return 0;
-	fi
-	
 	local MY_BRANCH=$(git branch --show-current)
 	local STATUS=$(git status --porcelain)
 

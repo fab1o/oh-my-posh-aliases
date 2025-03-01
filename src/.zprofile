@@ -274,7 +274,7 @@ clone() {
   code .
 }
 
-# Git
+# Git =========================================================================
 alias add="git add $1"
 alias abort="GIT_EDITOR=true git rebase --abort -q && git merge --abort -q"
 alias clean="git clean -fd -q && git restore -q ."

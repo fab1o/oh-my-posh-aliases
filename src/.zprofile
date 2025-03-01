@@ -570,6 +570,8 @@ prune() {
 		git checkout $DEFAULT_MAIN_BRANCH --quiet
 	fi
 
+	git tag -l | xargs git tag -d
+	git fetch --tags
 	git branch --merged | grep -v "^\*\\|$DEFAULT_MAIN_BRANCH" | xargs -n 1 git branch -d
 	git prune
 }

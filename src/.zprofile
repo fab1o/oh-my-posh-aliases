@@ -286,6 +286,11 @@ rev() {
 		return 0;
 	fi
 
+	if [ ! -d ".git" ]; then
+		echo "\e[31mfatal:\e[0m not a git repository"
+		return 0;
+	fi
+
 	local FOLDER=$(eval echo $Z_PROJECT_FOLDER)
 	local BRANCH=$1
 

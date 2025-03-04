@@ -10,95 +10,92 @@ local Z_SETUP_BASH_SCRIPT_PATH=$(sed -n 's/^Z_SETUP_BASH_SCRIPT_PATH=\([^ ]*\)/\
 local Z_PR_REPLACE=$(sed -n 's/^Z_PR_REPLACE=\([^ ]*\)/\1/p' $Z_CONFIG_FILE)
 local Z_PR_APPEND=$(sed -n 's/^Z_PR_APPEND=\([^ ]*\)/\1/p' $Z_CONFIG_FILE)
 local Z_PR_RUN_TEST=$(sed -n 's/^Z_PR_RUN_TEST=\([^ ]*\)/\1/p' $Z_CONFIG_FILE)
+local Z_RUN_DEV=$(sed -n 's/^Z_RUN_DEV=\([^ ]*\)/\1/p' $Z_CONFIG_FILE)
 
 help() {
 	tput reset
 
 	local TITLE_COR="\e[37m"
-	local COMMAND_COR="\e[93m"
-	local COMMAND_COR_EXEC="\e[33m"
-	local PROJECT_COR="\e[94m"
-	local PROJECT_COR_EXEC="\e[34m"
+	local COMMAND_COR="\e[33m"
+	local PROJECT_COR="\e[34m"
 	local GIT_COR="\e[36m"
-	local GIT_COR_EXEC="\e[96m"
 
 	echo "$TITLE_COR -- General ------------------------------------------------- \e[0m"
-	echo " $COMMAND_COR_EXEC cl \e[0m\t\t = clear"
-	echo " $COMMAND_COR_EXEC del \$1\e[0m\t = delete path"
-	echo " $COMMAND_COR_EXEC h \e[0m\t\t = cd ~"
-	echo " $COMMAND_COR_EXEC ll \e[0m\t\t = ls -lh"
-	echo " $COMMAND_COR_EXEC nodei \e[0m\t = info about node"
-	echo " $COMMAND_COR_EXEC nlist \e[0m\t = npm list global"
-	echo " $COMMAND_COR_EXEC path \e[0m\t\t = echo \$PATH"
-	echo " $COMMAND_COR_EXEC refresh \e[0m\t = source ~/.zshrc + ~/.zprofile"
+	echo " $COMMAND_COR cl \e[0m\t\t = clear"
+	echo " $COMMAND_COR del \$1\e[0m\t = delete path"
+	echo " $COMMAND_COR h \e[0m\t\t = cd ~"
+	echo " $COMMAND_COR ll \e[0m\t\t = ls -laF"
+	echo " $COMMAND_COR nodei \e[0m\t = info about node"
+	echo " $COMMAND_COR nlist \e[0m\t = npm list global"
+	echo " $COMMAND_COR path \e[0m\t\t = echo \$PATH"
+	echo " $COMMAND_COR refresh \e[0m\t = source ~/.zshrc + ~/.zprofile"
 	echo "$TITLE_COR -- Project ------------------------------------------------- \e[0m"
-	echo " $PROJECT_COR_EXEC build \e[0m\t = $Z_PACKAGE_MANAGER build"
-	echo " $PROJECT_COR_EXEC cov \e[0m\t\t = $Z_PACKAGE_MANAGER test:coverage"
-	echo " $PROJECT_COR_EXEC e2e \e[0m\t\t = $Z_PACKAGE_MANAGER test:e2e"
-	echo " $PROJECT_COR_EXEC e2e \$1 \e[0m\t = $Z_PACKAGE_MANAGER test:e2e project \$1"
-	echo " $PROJECT_COR_EXEC fix \e[0m\t\t = $Z_PACKAGE_MANAGER lint + $Z_PACKAGE_MANAGER format"
-	echo " $PROJECT_COR_EXEC format \e[0m\t = $Z_PACKAGE_MANAGER format"
-	echo " $PROJECT_COR_EXEC i \e[0m\t\t = $Z_PACKAGE_MANAGER install"
-	echo " $PROJECT_COR_EXEC lint \e[0m\t\t = $Z_PACKAGE_MANAGER lint"
-	echo " $PROJECT_COR_EXEC test \e[0m\t\t = $Z_PACKAGE_MANAGER test"
-	echo " $PROJECT_COR_EXEC tsc \e[0m\t\t = $Z_PACKAGE_MANAGER tsc"
-	echo " $PROJECT_COR_EXEC run \e[0m\t\t = $Z_PACKAGE_MANAGER dev"
-	echo " $PROJECT_COR_EXEC sb \e[0m\t\t = $Z_PACKAGE_MANAGER storybook"
-	echo " $PROJECT_COR_EXEC sbb \e[0m\t\t = $Z_PACKAGE_MANAGER storybook:build"
-	echo " $PROJECT_COR_EXEC watch \e[0m\t = $Z_PACKAGE_MANAGER test:watch"
-	echo " $PROJECT_COR_EXEC $Z_PROJECT_SHORT_NAME \e[0m\t\t = cd $Z_PROJECT_FOLDER"
+	echo " $PROJECT_COR build \e[0m\t = $Z_PACKAGE_MANAGER build"
+	echo " $PROJECT_COR cov \e[0m\t\t = $Z_PACKAGE_MANAGER test:coverage"
+	echo " $PROJECT_COR dev \e[0m\t\t = start dev environment"
+	echo " $PROJECT_COR e2e \e[0m\t\t = $Z_PACKAGE_MANAGER test:e2e"
+	echo " $PROJECT_COR e2e \$1 \e[0m\t = $Z_PACKAGE_MANAGER test:e2e project \$1"
+	echo " $PROJECT_COR fix \e[0m\t\t = $Z_PACKAGE_MANAGER lint + $Z_PACKAGE_MANAGER format"
+	echo " $PROJECT_COR format \e[0m\t = $Z_PACKAGE_MANAGER format"
+	echo " $PROJECT_COR i \e[0m\t\t = $Z_PACKAGE_MANAGER install"
+	echo " $PROJECT_COR lint \e[0m\t\t = $Z_PACKAGE_MANAGER lint"
+	echo " $PROJECT_COR test \e[0m\t\t = $Z_PACKAGE_MANAGER test"
+	echo " $PROJECT_COR tsc \e[0m\t\t = $Z_PACKAGE_MANAGER tsc"
+	echo " $PROJECT_COR sb \e[0m\t\t = $Z_PACKAGE_MANAGER storybook"
+	echo " $PROJECT_COR sbb \e[0m\t\t = $Z_PACKAGE_MANAGER storybook:build"
+	echo " $PROJECT_COR watch \e[0m\t = $Z_PACKAGE_MANAGER test:watch"
+	echo " $PROJECT_COR $Z_PROJECT_SHORT_NAME \e[0m\t\t = cd into your project"
 	echo "$TITLE_COR -- Git ----------------------------------------------------- \e[0m"
-	echo " $GIT_COR_EXEC add \$1\e[0m\t = Add files to index"
-	echo " $GIT_COR_EXEC clone \$1\e[0m\t = clone to folder"
-	echo " $GIT_COR_EXEC commit \$1\e[0m\t = commit message"
-	echo " $GIT_COR_EXEC commita \$1\e[0m\t = add + commit message"
-	echo " $GIT_COR_EXEC delb \e[0m\t\t = delete branch selectively locally"
-	echo " $GIT_COR_EXEC delb \$1\e[0m\t = delete branch locally"
-	echo " $GIT_COR_EXEC fetch \e[0m\t = git fetch all"
-	echo " $GIT_COR_EXEC glog \e[0m\t\t = git log"
-	echo " $GIT_COR_EXEC pr \$1\e[0m\t\t = create pull request with labels \$1"
-	echo " $GIT_COR_EXEC prune \e[0m\t = delete merged branches locally"
-	echo " $GIT_COR_EXEC pull \e[0m\t\t = git pull all"
-	echo " $GIT_COR_EXEC push \e[0m\t\t = git push no-verify + tags"
-	echo " $GIT_COR_EXEC pushf \e[0m\t = git push + force"
-	echo " $GIT_COR_EXEC rev \$1\e[0m\t = review branch"
-	echo " $GIT_COR_EXEC stash \$1 \e[0m\t = stash all files"
-	echo " $GIT_COR_EXEC st \e[0m\t\t = git status"
-	echo " $GIT_COR_EXEC tag \$1\e[0m\t = git tag"
-	echo " $GIT_COR_EXEC tags \e[0m\t\t = list latest tag"
+	echo " $GIT_COR add \$1\e[0m\t = Add files to index"
+	echo " $GIT_COR clone \$1\e[0m\t = clone to folder"
+	echo " $GIT_COR commit \$1\e[0m\t = commit message"
+	echo " $GIT_COR commita \$1\e[0m\t = add + commit message"
+	echo " $GIT_COR delb \e[0m\t\t = delete branch selectively locally"
+	echo " $GIT_COR delb \$1\e[0m\t = delete branch locally"
+	echo " $GIT_COR fetch \e[0m\t = git fetch all"
+	echo " $GIT_COR glog \e[0m\t\t = git log"
+	echo " $GIT_COR pr \$1\e[0m\t\t = create pull request with labels \$1"
+	echo " $GIT_COR prune \e[0m\t = delete merged branches locally"
+	echo " $GIT_COR pull \e[0m\t\t = git pull all"
+	echo " $GIT_COR push \e[0m\t\t = git push no-verify + tags"
+	echo " $GIT_COR pushf \e[0m\t = git push + force"
+	echo " $GIT_COR rev \$1\e[0m\t = review branch"
+	echo " $GIT_COR stash \$1 \e[0m\t = stash all files"
+	echo " $GIT_COR st \e[0m\t\t = git status"
+	echo " $GIT_COR tag \$1\e[0m\t = git tag"
+	echo " $GIT_COR tags \e[0m\t\t = list latest tag"
 	echo "$TITLE_COR -- Git clean branch ---------------------------------------- \e[0m"
-	echo " $GIT_COR_EXEC clean\e[0m\t\t = git clean + restore"
-	echo " $GIT_COR_EXEC reset \$1\e[0m\t = unstage files or all"
-	echo " $GIT_COR_EXEC reseta \e[0m\t = git reset hard"
-	echo " $GIT_COR_EXEC reset1 \e[0m\t = git reset soft HEAD~1"
-	echo " $GIT_COR_EXEC reset2 \e[0m\t = git reset soft HEAD~2"
-	echo " $GIT_COR_EXEC reset3 \e[0m\t = git reset soft HEAD~3"
-	echo " $GIT_COR_EXEC reset4 \e[0m\t = git reset soft HEAD~4"
-	echo " $GIT_COR_EXEC reset5 \e[0m\t = git reset soft HEAD~5"
+	echo " $GIT_COR clean\e[0m\t\t = git clean + restore"
+	echo " $GIT_COR reset \$1\e[0m\t = unstage files or all"
+	echo " $GIT_COR reseta \e[0m\t = git reset hard"
+	echo " $GIT_COR reset1 \e[0m\t = git reset soft HEAD~1"
+	echo " $GIT_COR reset2 \e[0m\t = git reset soft HEAD~2"
+	echo " $GIT_COR reset3 \e[0m\t = git reset soft HEAD~3"
+	echo " $GIT_COR reset4 \e[0m\t = git reset soft HEAD~4"
+	echo " $GIT_COR reset5 \e[0m\t = git reset soft HEAD~5"
 	echo "$TITLE_COR -- Git list branch ----------------------------------------- \e[0m"
-	echo " $GIT_COR_EXEC gll \e[0m\t\t = list local branches"
-	echo " $GIT_COR_EXEC gll \$1 \e[0m\t = list local branches matching \$1"
-	echo " $GIT_COR_EXEC glr \e[0m\t\t = list remote branches"
-	echo " $GIT_COR_EXEC glr \$1 \e[0m\t = list remote branches matching \$1"
+	echo " $GIT_COR gll \e[0m\t\t = list local branches"
+	echo " $GIT_COR gll \$1 \e[0m\t = list local branches matching \$1"
+	echo " $GIT_COR glr \e[0m\t\t = list remote branches"
+	echo " $GIT_COR glr \$1 \e[0m\t = list remote branches matching \$1"
 	echo "$TITLE_COR -- Git merge branch ---------------------------------------- \e[0m"
-	echo " $GIT_COR_EXEC abort\e[0m\t\t = abort rebase/merge"
-	echo " $GIT_COR_EXEC mc \e[0m\t\t = continue merge"
-	echo " $GIT_COR_EXEC merge \e[0m\t = merge from default branch"
-	echo " $GIT_COR_EXEC merge \$1 \e[0m\t = merge from branch"
-	echo " $GIT_COR_EXEC rc \e[0m\t\t = continue rebase"
-	echo " $GIT_COR_EXEC rebase \e[0m\t = rebase from default branch"
-	echo " $GIT_COR_EXEC rebase \$1 \e[0m\t = rebase from branch"
+	echo " $GIT_COR abort\e[0m\t\t = abort rebase/merge"
+	echo " $GIT_COR mc \e[0m\t\t = continue merge"
+	echo " $GIT_COR merge \e[0m\t = merge from default branch"
+	echo " $GIT_COR merge \$1 \e[0m\t = merge from branch"
+	echo " $GIT_COR rc \e[0m\t\t = continue rebase"
+	echo " $GIT_COR rebase \e[0m\t = rebase from default branch"
+	echo " $GIT_COR rebase \$1 \e[0m\t = rebase from branch"
 	echo "$TITLE_COR -- Git switch branch --------------------------------------- \e[0m"
-	echo " $GIT_COR_EXEC ck \$1 \e[0m\t = find branch and checkout"
-	echo " $GIT_COR_EXEC ck \$1 \$2 \e[0m\t = create branch off of \$2"
-	echo " $GIT_COR_EXEC main \e[0m\t\t = go to default branch"
+	echo " $GIT_COR ck \$1 \e[0m\t = find branch and checkout"
+	echo " $GIT_COR ck \$1 \$2 \e[0m\t = create branch off of \$2"
+	echo " $GIT_COR main \e[0m\t\t = go to default branch"
 }
 
 # General
 alias cl="tput reset"
-alias dev="cd ~/Developer"
 alias h="cd ~"
-alias ll="ls -lh"
+alias ll="ls -laF"
 alias nodei="node -e 'console.log(process.version, process.arch, process.platform)'"
 alias nlist="npm list --global --depth=0"
 alias path="echo $PATH"
@@ -144,10 +141,10 @@ del() {
 		FLAG=1
 	fi
 
-	if [[ -d "$FOLDER_PATH" ]]; then
+	if [[ -e "$FOLDER_PATH" ]]; then
 		rm -rf "$FOLDER_PATH"
 	else
-		echo "\e[33mfolder does not exist\n" #red
+		echo "\e[31mfatal:\e[0m does not exist: '$FOLDER_PATH'\n"
 	fi
 
 	if [[ $FLAG -eq 1 ]]; then
@@ -160,13 +157,13 @@ del() {
 # Project
 alias build="$Z_PACKAGE_MANAGER build"
 alias cov="$Z_PACKAGE_MANAGER test:coverage"
+alias dev="$Z_RUN_DEV"
 alias fix="$Z_PACKAGE_MANAGER lint && $Z_PACKAGE_MANAGER format"
 alias format="$Z_PACKAGE_MANAGER format"
 alias i="$Z_PACKAGE_MANAGER install"
 alias lint="$Z_PACKAGE_MANAGER lint"
 alias test="$Z_PACKAGE_MANAGER test"
 alias tsc="$Z_PACKAGE_MANAGER tsc"
-alias run="$Z_PACKAGE_MANAGER dev"
 alias sb="$Z_PACKAGE_MANAGER storybook"
 alias sbb="$Z_PACKAGE_MANAGER storybook:build"
 alias watch="$Z_PACKAGE_MANAGER test:watch"
@@ -287,29 +284,33 @@ rev() {
 	fi
 
 	if [ ! -d ".git" ]; then
-		echo "\e[31mfatal:\e[0m not a git repository"
-		return 0;
+		eval $Z_PROJECT_SHORT_NAME
 	fi
 
 	local FOLDER=$(eval echo $Z_PROJECT_FOLDER)
 	local BRANCH=$1
 
-	if [ -d ".git" ]; then
-		local REMOTE_BRANCH=$(git branch -r --list | grep -w "$1" | sed 's/^[* ]*//g' | sed -e 's/remotes\///' | sed -e 's/origin\///' | head -n 1)
+	local REMOTE_BRANCH=$(git branch -r --list | grep -w "$1" | sed 's/^[* ]*//g' | sed -e 's/remotes\///' | sed -e 's/origin\///' | head -n 1)
 
-		if [[ -n "$REMOTE_BRANCH" ]]; then
-			echo "Found branch: $REMOTE_BRANCH"
-			BRANCH=$REMOTE_BRANCH
+	if [[ ! -n "$REMOTE_BRANCH" ]]; then
+		echo "\e[31mfatal:\e[0m did not match any branch known to git: '$1'"
+	fi
+
+	BRANCH=$REMOTE_BRANCH
+
+	echo "Code review on branch: '$BRANCH'"
+
+	if [ ! -d "$FOLDER/../rev.$BRANCH" ]; then
+  	clone "rev.$BRANCH" $BRANCH
+  	return;
+	fi
+
+	for i in {2..20}; do
+		if [ ! -d "$FOLDER/../rev$i.$BRANCH" ]; then
+			clone "rev$i.$BRANCH" $BRANCH
+			break;
 		fi
-	fi
-
-	if [ -d "$FOLDER/../rev.$BRANCH" ]; then
-    eval cd "$FOLDER/../rev.$BRANCH"
-    eval code .
-    return 0;
-	fi
-
-  clone "rev.$BRANCH" $BRANCH
+	done
 }
 
 # clone project

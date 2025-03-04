@@ -2,6 +2,9 @@
 # example: yarn | npm run | pnpm | bun
 Z_PACKAGE_MANAGER=npm run
 
+# Command to run the project in development mode.
+Z_RUN_DEV=npm start
+
 # Folder path to my project.
 # example: ~/Developer/my_project
 Z_PROJECT_FOLDER=~/Developer/oh-my-posh-aliases

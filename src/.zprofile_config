@@ -1,3 +1,5 @@
+# Version 1.2.0
+
 # Package manager to use:
 # example: yarn | npm run | pnpm | bun
 Z_PACKAGE_MANAGER=npm run

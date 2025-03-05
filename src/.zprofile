@@ -1,3 +1,5 @@
+# Version 1.2.0
+
 local Z_CONFIG_FILE=~/.zprofile_config
 
 local Z_PACKAGE_MANAGER=$(sed -n 's/^Z_PACKAGE_MANAGER=\([^ ]*\)/\1/p' $Z_CONFIG_FILE)
@@ -608,7 +610,7 @@ prune() {
 	# delets all tags
 	git tag -l | xargs git tag -d
 	# fetch tags that exist in the remote
-	git fetch --tags --quiet
+	git fetch --tags
 	
 	#Lists all branches that have been merged into the currently checked-out branch
 	#that can be safely deleted without losing any unmerged work and filters out the default branch

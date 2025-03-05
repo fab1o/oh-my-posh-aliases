@@ -71,6 +71,7 @@ Considering upgrading if the version in your `.zprofile` is outdated. The versio
 3. Replace the files in your home folder (`~/`) with the new version (the unzipped files):
 - `/oh-my-posh-aliases/src/.zprofile`
 - `/oh-my-posh-aliases/src/fabiocosta.omp.json`
+
 (do not replace `~/.zprofile_config` because you don't want your configuration values replaced)
 
 4. Refresh your terminal (or restart if you're experiencing issues)

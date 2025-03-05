@@ -409,7 +409,7 @@ push() {
 
 	local MY_BRANCH=$(git branch --show-current)
 
-	git push --no-verify --set-upstream origin $MY_BRANCH
+	git push --no-verify --tags --set-upstream origin $MY_BRANCH
 }
 
 stash() {

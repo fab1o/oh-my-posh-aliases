@@ -23,6 +23,8 @@ Support for **Z shell (Zsh) only**. Type `help` to print documentation below:
 
 ## Setup
 
+## Get Started
+
 1. Install iTerm2
 
 - (optional) Turn "Show mark indicators" off to hide the arrow in each prompt. Go to Settings > Profiles > Terminal > unselect "Show mark indicators"
@@ -50,8 +52,25 @@ Support for **Z shell (Zsh) only**. Type `help` to print documentation below:
 eval "$(oh-my-posh init zsh --config ~/fabiocosta.omp.json)"
 ```
 
-6. Restart your terminal
+6. Tailor your settings within `~/.zprofile_config`
+
+7. Restart your terminal
 
 ## Configuration
 
-Tailor your settings within `~/.zprofile_config`
+Tailor your settings within `~/.zprofile_config` and restart or run `refresh` command to refresh your terminal.
+
+### Upgrade
+
+Considering upgrading if the version in your `.zprofile` is outdated. The version is on the 1st line of the file.
+
+1. Go to the [latest release](https://github.com/fab1o/oh-my-posh-aliases/releases), download the zip and unzip.
+
+2. Check if the version on top of your own `~/.zprofile_config` file is also outdaded. If it is then copy the new configuration values from the unzipped file to your own `~/.zprofile_config` file.
+
+3. Replace the files in your home folder (`~/`) with the new version (the unzipped files):
+- `/oh-my-posh-aliases/src/.zprofile`
+- `/oh-my-posh-aliases/src/fabiocosta.omp.json`
+(do not replace `~/.zprofile_config` because you don't want your configuration values replaced)
+
+4. Refresh your terminal (or restart if you're experiencing issues)

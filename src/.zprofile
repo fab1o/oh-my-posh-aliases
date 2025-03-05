@@ -188,6 +188,7 @@ pr() {
 
 	# Initialize an empty string to store the commit details
 	local COMMIT_MSGS=""
+	local PR_TITLE=""
 
 	local REMOTE_BRANCH=$(git for-each-ref --format='%(upstream:short)' "$(git symbolic-ref -q HEAD)" origin/mainline)
 
@@ -222,12 +223,17 @@ pr() {
 	        break
 	    fi
 
+			if [[ -n "$PR_TITLE" ]]; then
+				PR_TITLE="$commit_message"
+			fi
+
 	    # Add the commit hash and message to the list
 	    COMMIT_MSGS+="$commit_hash $commit_message"$'\n'
 		done
 	else
 		# Local branch has not yet been pushed to remote
 
+		# Loop through all commits in the current branch using git log (newest to oldest)
 		git log --branches --not --remotes --oneline --pretty=format:'%H | %s' | while IFS= read -r line; do
 	    local commit_hash=$(echo "$line" | cut -d'|' -f1 | xargs)
 	    local commit_message=$(echo "$line" | cut -d'|' -f2- | xargs)
@@ -243,6 +249,10 @@ pr() {
 			  break
 			fi
 
+			if [[ -n "$PR_TITLE" ]]; then
+				PR_TITLE="$commit_message"
+			fi
+
 	    # Add the commit hash and message to the list
 			COMMIT_MSGS+="$commit_hash $commit_message"$'\n'
 		done
@@ -253,7 +263,6 @@ pr() {
 		return 0;
 	fi
 
-	local FIRST_COMMIT=$(git log --branches --not --remotes --oneline | sed -n '$p' | sed 's/^[^ ]* //')
 	local PR_TEMPLATE=$(cat .github/pull_request_template.md)
 
 	if [ $Z_PR_APPEND -eq 1 ]; then
@@ -268,10 +277,15 @@ pr() {
 
 	push
 
+  # debugging purposes
+	# echo "$PR_TITLE"
+	# echo "$PR_BODY"
+	# return 0;
+
 	if [ -z $1 ]; then
-		gh pr create -a @me --title $FIRST_COMMIT --body $PR_BODY --web --head $MY_BRANCH
+		gh pr create -a @me --title $PR_TITLE --body $PR_BODY --web --head $MY_BRANCH
 	else
-		gh pr create -a @me --title $FIRST_COMMIT --body $PR_BODY --web --head $MY_BRANCH --label $1 
+		gh pr create -a @me --title $PR_TITLE --body $PR_BODY --web --head $MY_BRANCH --label $1 
 	fi
 }
 

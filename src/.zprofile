@@ -226,9 +226,7 @@ pr() {
 	        break
 	    fi
 
-			if [[ -n "$PR_TITLE" ]]; then
-				PR_TITLE="$commit_message"
-			fi
+			PR_TITLE="$commit_message"
 
 	    # Add the commit hash and message to the list
 	    COMMIT_MSGS+="$commit_hash $commit_message"$'\n'
@@ -252,9 +250,7 @@ pr() {
 			  break
 			fi
 
-			if [[ -n "$PR_TITLE" ]]; then
-				PR_TITLE="$commit_message"
-			fi
+			PR_TITLE="$commit_message"
 
 	    # Add the commit hash and message to the list
 			COMMIT_MSGS+="$commit_hash $commit_message"$'\n'
@@ -280,7 +276,7 @@ pr() {
 
 	push
 
-  # debugging purposes
+  ## debugging purposes
 	# echo "$PR_TITLE"
 	# echo "$PR_BODY"
 	# return 0;

@@ -272,14 +272,14 @@ pr() {
 		local PR_BODY=$(echo "$PR_TEMPLATE" | perl -pe "s/\Q$Z_PR_REPLACE\E/$COMMIT_MSGS/g")
 	fi
 
-	local MY_BRANCH=$(git branch --show-current)
-
-	push
-
-  ## debugging purposes
+  # # debugging purposes
 	# echo "$PR_TITLE"
 	# echo "$PR_BODY"
 	# return 0;
+
+	local MY_BRANCH=$(git branch --show-current)
+
+	push
 
 	if [ -z $1 ]; then
 		gh pr create -a @me --title $PR_TITLE --body $PR_BODY --web --head $MY_BRANCH

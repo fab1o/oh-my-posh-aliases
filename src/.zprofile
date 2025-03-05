@@ -62,8 +62,9 @@ help() {
 	echo " $GIT_COR rev \$1\e[0m\t = review branch"
 	echo " $GIT_COR stash \$1 \e[0m\t = stash all files"
 	echo " $GIT_COR st \e[0m\t\t = git status"
-	echo " $GIT_COR tag \$1\e[0m\t = git tag"
-	echo " $GIT_COR tags \e[0m\t\t = list latest tag"
+	echo " $GIT_COR tag \$1\e[0m\t = create tag"
+	echo " $GIT_COR ltag \e[0m\t\t = display latest tag"
+	echo " $GIT_COR tags \e[0m\t\t = list all tags"
 	echo "$TITLE_COR -- Git clean branch ---------------------------------------- \e[0m"
 	echo " $GIT_COR clean\e[0m\t\t = git clean + restore"
 	echo " $GIT_COR reset \$1\e[0m\t = unstage files or all"
@@ -424,13 +425,27 @@ tag() {
 	git tag --annotate $1 --message $1
 }
 
+ltag() {
+	tags 1
+}
+
 tags() {
-	git fetch --quiet --tags --all --prune --prune-tags
+	git fetch --quiet --tags --prune --prune-tags
 
-	local TAG=$(git for-each-ref refs/tags --sort=-taggerdate --format='%(refname:short)' --count=1 | sed '')
+	local TAG=""
 
-	if [[ -z $TAG ]]; then
-		TAG=$(git for-each-ref refs/tags --sort=-committerdate --format='%(refname:short)' --count=1 | sed '')
+	if [[ -z $1 ]]; then
+		TAG=$(git for-each-ref refs/tags --sort=-taggerdate --format='%(refname:short)')
+
+		if [[ -z $TAG ]]; then
+			TAG=$(git for-each-ref refs/tags --sort=-committerdate --format='%(refname:short)')
+		fi
+	else
+		TAG=$(git for-each-ref refs/tags --sort=-taggerdate --format='%(refname:short)' --count=$1)
+
+		if [[ -z $TAG ]]; then
+			TAG=$(git for-each-ref refs/tags --sort=-committerdate --format='%(refname:short)' --count=$1)
+		fi
 	fi
 
 	if [[ -z $TAG ]]; then
@@ -583,15 +598,20 @@ merge() {
 
 # Delete local branches ===========================================================
 prune() {
-	local STATUS=$(git status --porcelain)
 	local DEFAULT_MAIN_BRANCH=$(git config --get init.defaultBranch)
 
-	if [[ -z $STATUS ]]; then # clean status
-		git checkout $DEFAULT_MAIN_BRANCH --quiet
-	fi
+	# local STATUS=$(git status --porcelain)
+	# if [[ -z $STATUS ]]; then # clean status
+	# 	git checkout $DEFAULT_MAIN_BRANCH --quiet
+	# fi
 
+	# delets all tags
 	git tag -l | xargs git tag -d
-	git fetch --tags
+	# fetch tags that exist in the remote
+	git fetch --tags --quiet
+	
+	#Lists all branches that have been merged into the currently checked-out branch
+	#that can be safely deleted without losing any unmerged work and filters out the default branch
 	git branch --merged | grep -v "^\*\\|$DEFAULT_MAIN_BRANCH" | xargs -n 1 git branch -d
 	git prune
 }

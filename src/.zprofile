@@ -48,25 +48,26 @@ help() {
 	echo "$TITLE_COR -- $Z_PROJECT_SHORT_NAME ----------------------------------------------------- \e[0m"
 	echo " $PROJECT_COR $Z_PROJECT_SHORT_NAME \e[0m\t\t = cd $Z_PROJECT_FOLDER_"
 	echo " $PROJECT_COR clonep \$1\e[0m\t = clone $Z_PROJECT_SHORT_NAME to folder"
-	echo " $PROJECT_COR setup \$1\e[0m\t = setup and open project"
+	echo " $PROJECT_COR setup \e[0m\t = $Z_SETUP_SCRIPT + Z_SETUP_COMMAND"
 	echo " $PROJECT_COR rev \$1\e[0m\t = review $Z_PROJECT_SHORT_NAME branch"
 	echo " $PROJECT_COR rev+ \$1\e[0m\t = find and review $Z_PROJECT_SHORT_NAME branch"
-	echo " $PROJECT_COR run \$1 \e[0m\t = run dev project in $(basename "$(realpath "$(eval echo "$Z_PROJECT_FOLDER/../")")")"
+	echo " $PROJECT_COR run \e[0m\t\t = $Z_RUN_DEV"
+	echo " $PROJECT_COR run \$1 \e[0m\t = run project in $(basename "$(realpath "$(eval echo "$Z_PROJECT_FOLDER/../")")")"
 	echo "$TITLE_COR -- $Z_PACKAGE_MANAGER ---------------------------------------------------- \e[0m"
 	echo " $PACKAGE_COR build \e[0m\t = $Z_PACKAGE_MANAGER build"
 	echo " $PACKAGE_COR cov \e[0m\t\t = $Z_PACKAGE_MANAGER test:coverage"
-	echo " $PACKAGE_COR dev \e[0m\t\t = $Z_RUN_DEV"
 	echo " $PACKAGE_COR e2e \e[0m\t\t = $Z_PACKAGE_MANAGER test:e2e"
 	echo " $PACKAGE_COR e2e \$1 \e[0m\t = $Z_PACKAGE_MANAGER test:e2e project \$1"
 	echo " $PACKAGE_COR fix \e[0m\t\t = $Z_PACKAGE_MANAGER lint + $Z_PACKAGE_MANAGER format"
 	echo " $PACKAGE_COR format \e[0m\t = $Z_PACKAGE_MANAGER format"
 	echo " $PACKAGE_COR i \e[0m\t\t = $Z_PACKAGE_MANAGER install"
 	echo " $PACKAGE_COR lint \e[0m\t\t = $Z_PACKAGE_MANAGER lint"
-	echo " $PACKAGE_COR test \e[0m\t\t = $Z_PACKAGE_MANAGER test"
-	echo " $PACKAGE_COR tsc \e[0m\t\t = $Z_PACKAGE_MANAGER tsc"
+	echo " $PACKAGE_COR rdev \e[0m\t\t = $Z_PACKAGE_MANAGER dev"
 	echo " $PACKAGE_COR sb \e[0m\t\t = $Z_PACKAGE_MANAGER storybook"
 	echo " $PACKAGE_COR sbb \e[0m\t\t = $Z_PACKAGE_MANAGER storybook:build"
 	echo " $PACKAGE_COR start \e[0m\t = $Z_PACKAGE_MANAGER start"
+	echo " $PACKAGE_COR test \e[0m\t\t = $Z_PACKAGE_MANAGER test"
+	echo " $PACKAGE_COR tsc \e[0m\t\t = $Z_PACKAGE_MANAGER tsc"
 	echo " $PACKAGE_COR watch \e[0m\t = $Z_PACKAGE_MANAGER test:watch"
 	echo "$TITLE_COR -- git ----------------------------------------------------- \e[0m"
 	echo " $GIT_COR add \$1\e[0m\t = Add files to index"
@@ -114,7 +115,8 @@ help() {
 	echo " $GIT_COR ck+ \$1 \e[0m\t = find branch and checkout"
 	echo " $GIT_COR ck \$1 \$2 \e[0m\t = create branch off of \$2"
 	echo " $GIT_COR ck+ \$1 \$2 \e[0m\t = find and create branch off of \$2"
-	echo " $GIT_COR main \e[0m\t\t = go to default branch"
+	echo " $GIT_COR dev \e[0m\t\t = checkout dev branch"
+	echo " $GIT_COR main \e[0m\t\t = checkout default/main branch"
 }
 
 # General
@@ -182,11 +184,11 @@ del() {
 # Project
 alias build="$Z_PACKAGE_MANAGER build"
 alias cov="$Z_PACKAGE_MANAGER test:coverage"
-alias dev="$Z_RUN_DEV"
 alias fix="$Z_PACKAGE_MANAGER lint && $Z_PACKAGE_MANAGER format"
 alias format="$Z_PACKAGE_MANAGER format"
 alias i="$Z_PACKAGE_MANAGER install"
 alias lint="$Z_PACKAGE_MANAGER lint"
+alias rdev="$Z_PACKAGE_MANAGER dev"
 alias test="$Z_PACKAGE_MANAGER test"
 alias tsc="$Z_PACKAGE_MANAGER tsc"
 alias sb="$Z_PACKAGE_MANAGER storybook"
@@ -317,21 +319,20 @@ pr() {
 
 run() {
 	if [ -z "$1" ]; then
-		echo "type: \e[93mrun <project>\e[0m"
-		return 0;
+		eval $Z_RUN_DEV
+	else
+		local PROJECT=$(realpath "$(eval echo "$Z_PROJECT_FOLDER/../$1")")
+
+		if [ ! -d "$PROJECT" ]; then
+			echo "\e[31mfatal:\e[0m not a project: $PROJECT"
+			return 0;
+		fi
+
+		cd "$PROJECT"
+		echo "opened $(pwd)"
+		setup
+		dev
 	fi
-
-	local PROJECT=$(realpath "$(eval echo "$Z_PROJECT_FOLDER/../$1")")
-
-	if [ ! -d "$PROJECT" ]; then
-		echo "\e[31mfatal:\e[0m not a project: $PROJECT"
-		return 0;
-	fi
-
-	cd "$PROJECT"
-	echo "opened $(pwd)"
-	setup
-	dev
 }
 
 rev+() {
@@ -712,14 +713,44 @@ ck() {
 }
 
 # go to default branch stablished in config
+dev() {
+	local PAST_BRANCH=$(git branch --show-current)
+
+	local DEVELOP=$(git branch -a --list | grep -w develop | sed 's/^[* ]*//g')
+	local DEV=$(git branch -a --list | grep -w dev | sed 's/^[* ]*//g')
+
+	if [[ -n "$DEVELOP" ]]; then
+		git checkout develop --quiet
+
+		if [[ "$PAST_BRANCH" != "develop" ]]; then
+			echo "switched to branch: develop";
+		fi
+
+		return 0;
+	fi
+
+	if [[ -n "$DEV" ]]; then
+		git checkout dev --quiet
+
+		if [[ "$PAST_BRANCH" != "dev" ]]; then
+			echo "switched to branch: dev";
+		fi
+
+		return 0;
+	fi
+
+	echo "no dev branch was found";
+}
+
 main() {
 	local MY_BRANCH=$(git branch --show-current)
 	local DEFAULT_MAIN_BRANCH=$(git config --get init.defaultBranch)
+	local MAIN_BRANCH="${$DEFAULT_MAIN_BRANCH:-main}"
 
-	git checkout $DEFAULT_MAIN_BRANCH --quiet
+	git checkout $MAIN_BRANCH --quiet
 
-	if [[ "$MY_BRANCH" != "$DEFAULT_MAIN_BRANCH" ]]; then
-		echo "switched to branch: $DEFAULT_MAIN_BRANCH";
+	if [[ "$MY_BRANCH" != "$MAIN_BRANCH" ]]; then
+		echo "switched to branch: $MAIN_BRANCH";
 	fi
 }
 

@@ -50,6 +50,7 @@ help() {
 	echo " $PROJECT_COR clonep \$1\e[0m\t = clone $Z_PROJECT_SHORT_NAME to folder"
 	echo " $PROJECT_COR setup \$1\e[0m\t = setup and open project"
 	echo " $PROJECT_COR rev \$1\e[0m\t = review $Z_PROJECT_SHORT_NAME branch"
+	echo " $PROJECT_COR rev+ \$1\e[0m\t = find and review $Z_PROJECT_SHORT_NAME branch"
 	echo " $PROJECT_COR run \$1 \e[0m\t = run dev project in $(basename "$(realpath "$(eval echo "$Z_PROJECT_FOLDER/../")")")"
 	echo "$TITLE_COR -- $Z_PACKAGE_MANAGER ---------------------------------------------------- \e[0m"
 	echo " $PACKAGE_COR build \e[0m\t = $Z_PACKAGE_MANAGER build"
@@ -109,8 +110,10 @@ help() {
 	echo " $GIT_COR rebase \e[0m\t = rebase from default branch"
 	echo " $GIT_COR rebase \$1 \e[0m\t = rebase from branch"
 	echo "$TITLE_COR -- git switch branch --------------------------------------- \e[0m"
-	echo " $GIT_COR ck \$1 \e[0m\t = find branch and checkout"
+	echo " $GIT_COR ck \$1 \e[0m\t = checkout branch"
+	echo " $GIT_COR ck+ \$1 \e[0m\t = find branch and checkout"
 	echo " $GIT_COR ck \$1 \$2 \e[0m\t = create branch off of \$2"
+	echo " $GIT_COR ck+ \$1 \$2 \e[0m\t = find and create branch off of \$2"
 	echo " $GIT_COR main \e[0m\t\t = go to default branch"
 }
 
@@ -335,7 +338,7 @@ rev+() {
 	if [ -z $1 ]; then
 		echo "type: \e[93mrev+ <branch>\e[0m"
 	else
-		rev "$1 *"
+		rev $1*
 	fi
 }
 
@@ -624,9 +627,9 @@ ck+() {
 		echo "type: \e[93mck+ <branch>\e[0m \e[33m[<base>]\e[0m"
 	else
 		if [ -z $2 ]; then
-			ck "$1 *"
+			ck $1*
 		else
-			ck "$1 *" "$2 *"
+			ck $1* $2*
 		fi
 	fi
 }

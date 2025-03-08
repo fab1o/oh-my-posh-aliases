@@ -745,7 +745,7 @@ dev() {
 main() {
 	local MY_BRANCH=$(git branch --show-current)
 	local DEFAULT_MAIN_BRANCH=$(git config --get init.defaultBranch)
-	local MAIN_BRANCH="${$DEFAULT_MAIN_BRANCH:-main}"
+	local MAIN_BRANCH="${DEFAULT_MAIN_BRANCH:-main}"
 
 	git checkout $MAIN_BRANCH --quiet
 

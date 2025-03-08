@@ -1,26 +1,29 @@
-# Version 1.2.0
+# Version 1.3.0
 
 # Package manager to use:
 # example: yarn | npm run | pnpm | bun
+# default: npm run
 Z_PACKAGE_MANAGER=npm run
 
 # Command to run the project in development mode.
-Z_RUN_DEV=npm start
+# default: npm run dev
+Z_RUN_DEV=npm run dev
 
 # Folder path to my project.
-# example: ~/Developer/my_project
+# default: ~/
 Z_PROJECT_FOLDER=~/Developer/oh-my-posh-aliases
 
 # Repository uri
-# example: git@github.com:fab1o/oh-my-posh-aliases.git
+# default: git@github.com:fab1o/oh-my-posh-aliases.git
 Z_PROJECT_REPO=git@github.com:fab1o/oh-my-posh-aliases.git
 
 # Name of the project (make it short/use abbreviation)
-Z_PROJECT_SHORT_NAME=fabio
+# default: my
+Z_PROJECT_SHORT_NAME=my
 
 # script in the cloned project's package.json to run, if any, after cloning
-# example: npm install (usually).
-Z_SETUP_SCRIPT=npm install
+# default: npm i
+Z_SETUP_SCRIPT=npm i
 
 # commands to run via eval, if any, after 'Z_SETUP_SCRIPT'
 # example: cd /setup && sh setup && echo 'done'
@@ -40,9 +43,9 @@ Z_PULL_REQUEST_TEMPLATE=.github/pull_request_template.md
 Z_PR_REPLACE=Description:
 
 # 1 to append commit messages to 'Z_PR_REPLACE' or 0 to replace 'Z_PR_REPLACE' with commit messages.
-# example: 1 (false) or 0 (true)
+# default: 0
 Z_PR_APPEND=1
 
-# 1 to run test before pushing code and creating a pr
-# example: 1 (false) or 0 (true)
+# 1 to run test before pushing code and creating a pr or 0 to not run tests
+# default: 0
 Z_PR_RUN_TEST=0

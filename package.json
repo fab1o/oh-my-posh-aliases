@@ -13,6 +13,7 @@
     "url": "git+https://github.com/fab1o/oh-my-posh-aliases.git"
   },
   "scripts": {
+    "dev": "npm start",
     "start": "node test",
     "test": "node test"
   },

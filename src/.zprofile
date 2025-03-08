@@ -51,7 +51,7 @@ help() {
 	echo " $PROJECT_COR setup \e[0m\t = $Z_SETUP_SCRIPT + Z_SETUP_COMMAND"
 	echo " $PROJECT_COR rev \$1\e[0m\t = review $Z_PROJECT_SHORT_NAME branch"
 	echo " $PROJECT_COR rev+ \$1\e[0m\t = find and review $Z_PROJECT_SHORT_NAME branch"
-	echo " $PROJECT_COR run \e[0m\t\t = $Z_RUN_DEV"
+	echo " $PROJECT_COR run \e[0m\t\t = Z_RUN_DEV"
 	echo " $PROJECT_COR run \$1 \e[0m\t = run project in $(basename "$(realpath "$(eval echo "$Z_PROJECT_FOLDER/../")")")"
 	echo "$TITLE_COR -- $Z_PACKAGE_MANAGER ---------------------------------------------------- \e[0m"
 	echo " $PACKAGE_COR build \e[0m\t = $Z_PACKAGE_MANAGER build"

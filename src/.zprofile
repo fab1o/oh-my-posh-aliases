@@ -131,7 +131,7 @@ alias refresh="source ~/.zshrc && source ~/.zprofile && clear"
 # Deleting a path ===============================================================
 del() {
 	if [ -z $1 ]; then
-		echo "type: \e[93mdel <path>\e[0m"
+		echo "\e[93mdel <path> to delete a folder or file\e[0m"
 		return 0;
 	fi
 
@@ -337,9 +337,11 @@ run() {
 
 rev+() {
 	if [ -z $1 ]; then
-		echo "type: \e[93mrev+ <branch>\e[0m"
+		echo "find matching branch and create review: \e[93mrev+ <branch>\e[0m"
+		echo "create review from exact branch: \e[93mrev <branch>\e[0m"
+		echo "list reviews to open: \e[93mrev\e[0m"
 	else
-		rev $1*
+		rev $1\*
 	fi
 }
 
@@ -350,10 +352,11 @@ rev() {
 		mkdir -p "$Z_PROJECT_FOLDER/../revs"
 		cd "$Z_PROJECT_FOLDER/../revs"
 	  
-	  local REVS=$(ls -d rev* 2>/dev/null)
+	  local REVS=$(ls -d rev*)
 
 	  if [ -z "$REVS" ]; then
-			echo "type: \e[93mrev <branch>\e[0m to create a new review"
+			echo "create review from exact branch: \e[93mrev <branch>\e[0m"
+			echo "find matching branch and create review: \e[93mrev+ <branch>\e[0m"
 			return 0;
 	  fi
 
@@ -393,10 +396,8 @@ rev() {
 
 	if [[ "$BRANCH" == *\* ]]; then
 	  # Remove the "*" from the end of $1
-	  BRANCH="${BRANCH%*}"
+		BRANCH="${BRANCH//\*/}"
 		BRANCH=$(git branch -r --list | grep -w "$BRANCH" | sed 's/^[* ]*//g' | sed -e 's/remotes\///' | sed -e 's/origin\///' | head -n 1)
-	else
-	  BRANCH="$1"
 	fi
 
 	if [[ ! -n "$BRANCH" ]]; then
@@ -430,7 +431,8 @@ rev() {
 # clone my project to path relative to project_folder/.. and checkout branch $2
 clonep() {
 	if [ -z $1 ]; then
-		echo "type: \e[93mclonep <path> [<branch>]\e[0m"
+		echo "clone project in path: \e[93mclonep <path>\e[0m"
+		echo "clone project in path and checkout branch: \e[93mclonep <path> <branch>\e[0m"
 		return 0;
 	fi
 
@@ -442,8 +444,7 @@ clonep() {
 	echo "opened $(pwd)"
 
 	if [ ! -z $2 ]; then
-		git checkout $2 --quiet
-		if [ $? -eq 0 ]; then echo "switched to branch: $2"; fi
+		ck $2
 	fi
 }
 
@@ -468,7 +469,7 @@ setup() {
 # simple clone any project to path
 clone() {
 	if [ -z $1 ]; then
-		echo "type: \e[93mclone <uri> [<path>]\e[0m"
+		echo "clone git repository into path: \e[93mclone <uri> [<path>]\e[0m"
 		return 0;
 	fi
 
@@ -517,7 +518,7 @@ alias st="git status"
 # Commits =======================================================================
 commita() {
 	if [ -z $1 ]; then
-		echo "type: \e[93mcommit <message>\e[0m"
+		echo "stage and commit all files with message: \e[93mcommit <message>\e[0m"
 		return 0;
 	fi
 
@@ -527,7 +528,7 @@ commita() {
 
 commit() {
 	if [ -z $1 ]; then
-		echo "type: \e[93mcommit <message>\e[0m"
+		echo "commit staged files with message: \e[93mcommit <message>\e[0m"
 		return 0;
 	fi
 
@@ -555,7 +556,9 @@ stash() {
 
 tag() {
 	if [[ -z $1 ]]; then
-		echo "type: \e[93mtag <name>\e[0m"
+		echo "create a new tag: \e[93mtag <name>\e[0m"
+		echo "display last tag: \e[93mltag\e[0m"
+		echo "display all tags: \e[93mtags\e[0m"
 		return 0;
 	fi
 
@@ -625,19 +628,25 @@ gll() {
 # check out a branch or create a new one if $2 is given
 ck+() {
 	if [ -z $1 ]; then
-		echo "type: \e[93mck+ <branch>\e[0m \e[33m[<base>]\e[0m"
+	  echo "find matching branch and checkout: \e[93mck+ <branch>\e[0m"
+	  echo "create exact branch off of matching base branch: \e[93mck+ <branch>\e[0m \e[33m<base_branch>\e[0m"
+		echo "checkout exact branch: \e[93mck <branch>\e[0m"
+	  echo "create exact branch off of exact base branch: \e[93mck <branch>\e[0m \e[33m<base_branch>\e[0m"
 	else
 		if [ -z $2 ]; then
-			ck $1*
+			ck $1\*
 		else
-			ck $1* $2*
+			ck $1\* $2\*
 		fi
 	fi
 }
 
 ck() {
 	if [ -z $1 ]; then
-		echo "type: \e[93mck <branch>\e[0m \e[33m[<base>]\e[0m"
+		echo "checkout exact branch: \e[93mck <branch>\e[0m"
+	  echo "create exact branch off of exact base branch: \e[93mck <branch>\e[0m \e[33m<base_branch>\e[0m"
+	  echo "find matching branch and checkout: \e[93mck+ <branch>\e[0m"
+	  echo "create exact branch off of matching base branch: \e[93mck+ <branch>\e[0m \e[33m<base_branch>\e[0m"
 		return 0;
 	fi
 
@@ -647,69 +656,89 @@ ck() {
 		return 0;
 	fi
 
-	local USER_BRANCH="$1"
+	if [[ $1 == -* ]]; then
+		git checkout $1 $2 $3
 
-	if [[ "$USER_BRANCH" == *\* ]]; then
-	  # Remove the "*" from the end of $1
-	  USER_BRANCH="${USER_BRANCH%*}"
-	  # look for a branch locally before lookin g remotely
-		USER_BRANCH=${$(git branch --list | grep -w "$USER_BRANCH" | sed 's/^[* ]*//g' | sed -e 's/remotes\///' | sed -e 's/origin\///' | head -n 1):-$(git branch -r --list | grep -w "$USER_BRANCH" | sed 's/^[* ]*//g' | sed -e 's/remotes\///' | sed -e 's/origin\///' | head -n 1)}
-	else
-	  USER_BRANCH="$1"
+		return 0;
 	fi
 
-	local MY_BRANCH=$(git branch --show-current)
-	if [[ "$MY_BRANCH" == "$USER_BRANCH" ]]; then return 0; fi
+	local BRANCH="$1"
+
+	if [ -z $2 ]; then	
+		if [[ "$BRANCH" == *\* ]]; then
+		  # Remove the "*" from the end of $1
+		  BRANCH="${BRANCH//\*/}"
+		  # look for a branch locally before lookin g remotely
+			BRANCH=${$(git branch --list | grep -w "$BRANCH" | sed 's/^[* ]*//g' | sed -e 's/remotes\///' | sed -e 's/origin\///' | head -n 1):-$(git branch -r --list | grep -w "$BRANCH" | sed 's/^[* ]*//g' | sed -e 's/remotes\///' | sed -e 's/origin\///' | head -n 1)}
+		fi
+
+		if [[ ! -n "$BRANCH" ]]; then
+			echo "\e[31mfatal:\e[0m could not find branch matching: \e[94m$1\e[0m"
+			return 0;
+		fi
+	
+		local MY_BRANCH=$(git branch --show-current)
+
+		if [[ "$MY_BRANCH" == "$BRANCH" ]]; then
+			echo "current branch is \e[94m$BRANCH\e[0m";
+			return 0;
+		fi
+
+		git checkout $BRANCH --quiet
+
+		if [ $? -eq 0 ]; then
+			if [[ "$MY_BRANCH" != "$BRANCH" ]]; then
+				echo "switched to branch: \e[94m$BRANCH\e[0m";
+			fi
+		fi
+
+		return 0;
+	fi
 
 	local USER_BASE_BRANCH="$2"
 
+	if [[ "$BRANCH" == *\* ]]; then
+	  # Remove the "*" from the end of $1
+	  BRANCH="${BRANCH//\*/}"
+	fi
+
 	if [[ "$USER_BASE_BRANCH" == *\* ]]; then
 	  # Remove the "*" from the end of $1
-	  USER_BASE_BRANCH="${USER_BASE_BRANCH%*}"
+	  local USER_BASE_BRANCH_SEARCH="${USER_BASE_BRANCH//\*/}"
 	  # look for a branch locally before looking remotely
-		USER_BASE_BRANCH=${$(git branch --list | grep -w "$USER_BASE_BRANCH" | sed 's/^[* ]*//g' | sed -e 's/remotes\///' | sed -e 's/origin\///' | head -n 1):-$(git branch -r --list | grep -w "$USER_BASE_BRANCH" | sed 's/^[* ]*//g' | sed -e 's/remotes\///' | sed -e 's/origin\///' | head -n 1)}
-	else
-	  USER_BASE_BRANCH="$2"
+		USER_BASE_BRANCH=${$(git branch --list | grep -w "$USER_BASE_BRANCH_SEARCH" | sed 's/^[* ]*//g' | sed -e 's/remotes\///' | sed -e 's/origin\///' | head -n 1):-$(git branch -r --list | grep -w "$USER_BASE_BRANCH_SEARCH" | sed 's/^[* ]*//g' | sed -e 's/remotes\///' | sed -e 's/origin\///' | head -n 1)}
 	fi
 
+	# if $2 was given, let's create a new branch
 	if [[ -n "$USER_BASE_BRANCH" ]]; then
-		local BASE_LOCAL_BRANCH=$(git branch --list | grep -w "$USER_BASE_BRANCH" | sed 's/^[* ]*//g' | sed -e 's/remotes\///' | sed -e 's/origin\///' | head -n 1)
-		local BASE_REMOTE_BRANCH=$(git branch -r --list | grep -w "$USER_BASE_BRANCH" | sed 's/^[* ]*//g' | sed -e 's/remotes\///' | sed -e 's/origin\///' | head -n 1)
+	  local USER_BASE_BRANCH_SEARCH="${USER_BASE_BRANCH//\*/}"
+		local BASE_LOCAL_BRANCH=$(git branch --list | grep -w "$USER_BASE_BRANCH_SEARCH" | sed 's/^[* ]*//g' | sed -e 's/remotes\///' | sed -e 's/origin\///' | head -n 1)
+		local BASE_REMOTE_BRANCH=$(git branch -r --list | grep -w "$USER_BASE_BRANCH_SEARCH" | sed 's/^[* ]*//g' | sed -e 's/remotes\///' | sed -e 's/origin\///' | head -n 1)
 
 		if [[ -n "$BASE_LOCAL_BRANCH" ]]; then
-			git branch $1 $BASE_LOCAL_BRANCH
-			git checkout $1 --quiet
+			git branch $BRANCH $BASE_LOCAL_BRANCH
+			git checkout $BRANCH --quiet
 
-			if [ $? -eq 0 ]; then echo "switched to branch '$1' off of '$BASE_LOCAL_BRANCH'"; fi
+			if [ $? -eq 0 ]; then
+				echo "created branch: \e[94m$BRANCH\e[0m based of: \e[94m$BASE_LOCAL_BRANCH\e[0m";
+			fi
 		elif [[ -n "$BASE_REMOTE_BRANCH" ]]; then
 			git checkout $BASE_REMOTE_BRANCH --quiet
-			git branch $1 $BASE_REMOTE_BRANCH
-			git checkout $1 --quiet
+			git branch $BRANCH $BASE_REMOTE_BRANCH
+			git checkout $BRANCH --quiet
 			# git branch -D --quiet $BASE_REMOTE_BRANCH do not delete base branch because it helps vscode create a PR
 
-			if [ $? -eq 0 ]; then echo "switched to branch '$1' off of '$BASE_REMOTE_BRANCH'"; fi
+			if [ $? -eq 0 ]; then
+				echo "created branch: \e[94m$BRANCH\e[0m based of: \e[94m$BASE_REMOTE_BRANCH\e[0m";
+			fi
 		else
-			echo "\e[31mfatal:\e[0m not a valid branch name: '$2'"
+			echo "\e[31mfatal:\e[0m not a valid branch name: \e[94m$USER_BASE_BRANCH\e[0m"
 		fi
-
-		return 0;
-	fi
-  
-	local BRANCH=$(git branch -a --list | grep -w "$1" | sed 's/^[* ]*//g' | sed -e 's/remotes\///' | sed -e 's/origin\///' | head -n 1)
-
-	if [[ "$MY_BRANCH" == "$BRANCH" ]]; then return 0; fi
-
-	if [[ -n "$BRANCH" ]]; then
-		git checkout $BRANCH --quiet
-
-		if [[ "$MY_BRANCH" != "$BRANCH" ]]; then
-			echo "switched to branch: $BRANCH";
+	else
+		if [[ -n "$2" ]]; then
+			echo "\e[31mfatal:\e[0m could not find branch matching: \e[94m$2\e[0m"
 		fi
-
-		return 0;
 	fi
-
-	git checkout -b $1
 }
 
 # go to default branch stablished in config
@@ -722,8 +751,10 @@ dev() {
 	if [[ -n "$DEVELOP" ]]; then
 		git checkout develop --quiet
 
-		if [[ "$PAST_BRANCH" != "develop" ]]; then
-			echo "switched to branch: develop";
+		if [ $? -eq 0 ]; then
+			if [[ "$PAST_BRANCH" != "develop" ]]; then
+				echo "switched to branch: \e[94mdevelop\e[0m";
+			fi
 		fi
 
 		return 0;
@@ -732,14 +763,16 @@ dev() {
 	if [[ -n "$DEV" ]]; then
 		git checkout dev --quiet
 
-		if [[ "$PAST_BRANCH" != "dev" ]]; then
-			echo "switched to branch: dev";
+		if [ $? -eq 0 ]; then
+			if [[ "$PAST_BRANCH" != "dev" ]]; then
+				echo "switched to branch: \e[94mdev\e[0m";
+			fi
 		fi
 
 		return 0;
 	fi
 
-	echo "no dev branch was found";
+	echo "no branch was found: \e[94mdev\e[0m or \e[94mdevelop\e[0m";
 }
 
 main() {
@@ -749,9 +782,15 @@ main() {
 
 	git checkout $MAIN_BRANCH --quiet
 
-	if [[ "$MY_BRANCH" != "$MAIN_BRANCH" ]]; then
-		echo "switched to branch: $MAIN_BRANCH";
+	if [ $? -eq 0 ]; then
+		if [[ "$MY_BRANCH" != "$MAIN_BRANCH" ]]; then
+			echo "switched to branch: \e[94m$MAIN_BRANCH\e[0m";
+		fi
+
+		return 0;
 	fi
+
+	echo "no branch was found: \e[94m$MAIN_BRANCH\e[0m";
 }
 
 # Merging & Rebasing ========================================================================
@@ -762,7 +801,7 @@ rebase() {
 	local MAIN_BRANCH="${1:-$DEFAULT_MAIN_BRANCH}"
 
 	if [[ "$MY_BRANCH" == "$DEFAULT_MAIN_BRANCH" ]]; then
-		echo "\e[31mfatal:\e[0m cannot rebase in branch '$MY_BRANCH'";
+		echo "\e[31mfatal:\e[0m cannot rebase in branch: $MY_BRANCH";
 		return 0;
 	fi
 
@@ -786,7 +825,7 @@ merge() {
 	local MAIN_BRANCH="${1:-$DEFAULT_MAIN_BRANCH}"
 
 	if [[ "$MY_BRANCH" == "$DEFAULT_MAIN_BRANCH" ]]; then
-		echo "\e[31mfatal:\e[0m cannot merge in branch '$MY_BRANCH'";
+		echo "\e[31mfatal:\e[0m cannot merge in branch: $MY_BRANCH";
 		return 0;
 	fi
 

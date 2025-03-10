@@ -45,6 +45,7 @@ help() {
 	echo " $COMMAND_COR nlist \e[0m\t = npm list global"
 	echo " $COMMAND_COR path \e[0m\t\t = echo \$PATH"
 	echo " $COMMAND_COR refresh \e[0m\t = source .zshrc + .zprofile"
+	echo " $COMMAND_COR update \e[0m\t = update zsh + omp"
 	echo "$TITLE_COR -- $Z_PROJECT_SHORT_NAME ----------------------------------------------------- \e[0m"
 	echo " $PROJECT_COR $Z_PROJECT_SHORT_NAME \e[0m\t\t = cd $Z_PROJECT_FOLDER_"
 	echo " $PROJECT_COR clonep \$1\e[0m\t = clone $Z_PROJECT_SHORT_NAME to folder"
@@ -127,6 +128,7 @@ alias nodei="node -e 'console.log(process.version, process.arch, process.platfor
 alias nlist="npm list --global --depth=0"
 alias path="echo $PATH"
 alias refresh="source ~/.zshrc && source ~/.zprofile && clear"
+alias update="omz update && oh-my-posh upgrade"
 
 # Deleting a path ===============================================================
 del() {

@@ -316,6 +316,7 @@ pr() {
 	local MY_BRANCH=$(git branch --show-current)
 
 	push
+	if [ ! $? -eq 0 ]; then return 0; fi
 
 	if [ -z $1 ]; then
 		gh pr create -a @me --title $PR_TITLE --body $PR_BODY --web --head $MY_BRANCH
@@ -548,7 +549,7 @@ push() {
 
 		if [ ! $? -eq 0 ]; then
 			echo "\e[33m\nfatal: tests are not passing! cannot push!\e[0m"
-			return 0;
+			return 1;
 		fi
 	fi
 

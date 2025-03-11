@@ -185,7 +185,6 @@ del() {
 
 # Project
 alias build="$Z_PACKAGE_MANAGER build"
-alias cov="$Z_PACKAGE_MANAGER test:coverage"
 alias fix="$Z_PACKAGE_MANAGER lint && $Z_PACKAGE_MANAGER format"
 alias format="$Z_PACKAGE_MANAGER format"
 alias i="$Z_PACKAGE_MANAGER install"
@@ -198,6 +197,12 @@ alias sbb="$Z_PACKAGE_MANAGER storybook:build"
 alias start="$Z_PACKAGE_MANAGER start"
 alias watch="$Z_PACKAGE_MANAGER test:watch"
 alias $Z_PROJECT_SHORT_NAME="cd $Z_PROJECT_FOLDER"
+
+cov() {
+	mkdir -p coverage
+	$Z_PACKAGE_MANAGER test:coverage -- colors > coverage/report.ansi
+	open ./coverage/report.ansi -a "Sublime Text" $1
+}
 
 e2e() {
 	if [ -z $1 ]; then

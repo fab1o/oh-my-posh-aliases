@@ -78,6 +78,7 @@ help() {
 	echo " $GIT_COR delb \e[0m\t\t = delete branch selectively locally"
 	echo " $GIT_COR delb \$1\e[0m\t = delete branch locally"
 	echo " $GIT_COR fetch \e[0m\t = git fetch all"
+	echo " $GIT_COR gconf \e[0m\t\t = git config"
 	echo " $GIT_COR glog \e[0m\t\t = git log"
 	echo " $GIT_COR pr \$1\e[0m\t\t = create pull request with labels \$1"
 	echo " $GIT_COR prune \e[0m\t = delete merged branches locally"
@@ -129,6 +130,15 @@ alias nlist="npm list --global --depth=0"
 alias path="echo $PATH"
 alias refresh="source ~/.zshrc && source ~/.zprofile && clear"
 alias update="omz update && oh-my-posh upgrade"
+
+
+checkgit() {
+	if [ ! -d ".git" ]; then
+		echo "fatal: not a git repository (or any of the parent directories): .git"
+		# echo "\e[31mfatal:\e[0m not a git repository: $(pwd)"
+		return 1;
+	fi
+}
 
 # Deleting a path ===============================================================
 del() {
@@ -199,12 +209,16 @@ alias watch="$Z_PACKAGE_MANAGER test:watch"
 alias $Z_PROJECT_SHORT_NAME="cd $Z_PROJECT_FOLDER"
 
 cov() {
+	checkgit; if [ ! $? -eq 0 ]; then return 0; fi
+
 	mkdir -p coverage
-	$Z_PACKAGE_MANAGER test:coverage -- colors > coverage/report.ansi
-	open ./coverage/report.ansi -a "Sublime Text" $1
+	$Z_PACKAGE_MANAGER test:coverage --colors > coverage/report.ansi
+	open ./coverage/report.ansi -a "Sublime Text"
 }
 
 e2e() {
+	checkgit; if [ ! $? -eq 0 ]; then return 0; fi
+
 	if [ -z $1 ]; then
 		eval $Z_PACKAGE_MANAGER test:e2e
 	else
@@ -214,6 +228,8 @@ e2e() {
 
 # Creating PRs =============================================================
 pr() {
+	checkgit; if [ ! $? -eq 0 ]; then return 0; fi
+
 	local STATUS=$(git status --porcelain)
 
 	if [[ -n "$STATUS" ]]; then
@@ -316,7 +332,6 @@ pr() {
 	local MY_BRANCH=$(git branch --show-current)
 
 	push
-	if [ ! $? -eq 0 ]; then return 0; fi
 
 	if [ -z $1 ]; then
 		gh pr create -a @me --title $PR_TITLE --body $PR_BODY --web --head $MY_BRANCH
@@ -327,6 +342,8 @@ pr() {
 
 run() {
 	if [ -z "$1" ]; then
+		checkgit; if [ ! $? -eq 0 ]; then return 0; fi
+
 		eval $Z_RUN_DEV
 	else
 		local PROJECT=$(realpath "$(eval echo "$Z_PROJECT_FOLDER/../$1")")
@@ -350,6 +367,21 @@ rev+() {
 		echo "list reviews to open: \e[93mrev\e[0m"
 	else
 		rev $1\*
+	fi
+}
+
+setup() {
+	checkgit; if [ ! $? -eq 0 ]; then return 0; fi
+
+	eval $Z_SETUP_SCRIPT
+	eval $Z_SETUP_COMMAND
+
+	if [ ! -z $Z_SETUP_BASH_SCRIPT_PATH ]; then
+		if [ -f "$Z_SETUP_BASH_SCRIPT_PATH" ]; then
+			bash "$Z_SETUP_BASH_SCRIPT_PATH"
+		else
+			echo "\e[33mwarn:\e[0m file not found: Z_SETUP_BASH_SCRIPT_PATH=$Z_SETUP_BASH_SCRIPT_PATH"
+		fi
 	fi
 }
 
@@ -456,24 +488,6 @@ clonep() {
 	fi
 }
 
-setup() {
-	if [ ! -d ".git" ] && [ ! -f "package.json" ]; then
-		echo "\e[31mfatal:\e[0m not a project folder: $(pwd)"
-		return 0;
-	fi
-
-	eval $Z_SETUP_SCRIPT
-	eval $Z_SETUP_COMMAND
-
-	if [ ! -z $Z_SETUP_BASH_SCRIPT_PATH ]; then
-		if [ -f "$Z_SETUP_BASH_SCRIPT_PATH" ]; then
-			bash "$Z_SETUP_BASH_SCRIPT_PATH"
-		else
-			echo "\e[33mwarn:\e[0m file not found: Z_SETUP_BASH_SCRIPT_PATH=$Z_SETUP_BASH_SCRIPT_PATH"
-		fi
-	fi
-}
-
 # simple clone any project to path
 clone() {
 	if [ -z $1 ]; then
@@ -523,8 +537,16 @@ alias reset4="git reset --soft HEAD~4"
 alias reset5="git reset --soft HEAD~5"
 alias st="git status"
 
+gconf() {
+	echo "\e[33mUsername:\e[0m $(git config --get user.name)"
+	echo "\e[33mEmail:\e[0m $(git config --get user.email)"
+	echo "\e[33mDefault branch:\e[0m $(git config --get init.defaultBranch)"
+}
+
 # Commits =======================================================================
 commita() {
+	checkgit; if [ ! $? -eq 0 ]; then return 0; fi
+
 	if [ -z $1 ]; then
 		echo "stage and commit all files with message: \e[93mcommit <message>\e[0m"
 		return 0;
@@ -535,6 +557,8 @@ commita() {
 }
 
 commit() {
+	checkgit; if [ ! $? -eq 0 ]; then return 0; fi
+
 	if [ -z $1 ]; then
 		echo "commit staged files with message: \e[93mcommit <message>\e[0m"
 		return 0;
@@ -544,12 +568,14 @@ commit() {
 }
 
 push() {
+	checkgit; if [ ! $? -eq 0 ]; then return 0; fi
+
 	if [ $Z_PR_RUN_TEST -eq 1 ]; then
 		test
 
 		if [ ! $? -eq 0 ]; then
 			echo "\e[33m\nfatal: tests are not passing! cannot push!\e[0m"
-			return 1;
+			return 0;
 		fi
 	fi
 
@@ -559,10 +585,14 @@ push() {
 }
 
 stash() {
+	checkgit; if [ ! $? -eq 0 ]; then return 0; fi
+
 	git stash push --include-untracked --message "${1:-.}"
 }
 
 tag() {
+	checkgit; if [ ! $? -eq 0 ]; then return 0; fi
+
 	if [[ -z $1 ]]; then
 		echo "create a new tag: \e[93mtag <name>\e[0m"
 		echo "display last tag: \e[93mltag\e[0m"
@@ -574,10 +604,14 @@ tag() {
 }
 
 ltag() {
+	checkgit; if [ ! $? -eq 0 ]; then return 0; fi
+
 	tags 1
 }
 
 tags() {
+	checkgit; if [ ! $? -eq 0 ]; then return 0; fi
+
 	git fetch --quiet --tags --prune --prune-tags
 
 	local TAG=""
@@ -604,10 +638,14 @@ tags() {
 }
 
 reset() {
+	checkgit; if [ ! $? -eq 0 ]; then return 0; fi
+
   git restore --staged "${1:-.}"
 }
 
 reseta() {
+	checkgit; if [ ! $? -eq 0 ]; then return 0; fi
+
 	local MY_BRANCH=$(git branch --show-current)
 
 	git reset --hard origin/$MY_BRANCH
@@ -619,6 +657,8 @@ reseta() {
 # List branches =======================================================================
 # list remote branches that contains an optional text and adds a link to the branch in github
 glr() {
+	checkgit; if [ ! $? -eq 0 ]; then return 0; fi
+
 	git branch -r --list "*$1*" --sort=authordate --format='%(authordate:format:%m-%d-%Y) %(align:17,left)%(authorname)%(end) %(refname:strip=3)' | sed \
     -e 's/\([0-9]*-[0-9]*-[0-9]*\)/\x1b[32m\1\x1b[0m/' \
     -e 's/\([^\ ]*\)$/\x1b[34m\x1b]8;;https:\/\/github.com\/wmgtech\/wmg2-one-app\/tree\/\1\x1b\\\1\x1b]8;;\x1b\\\x1b[0m/'
@@ -626,6 +666,8 @@ glr() {
 
 # list only local branches that contains an optional text
 gll() {
+	checkgit; if [ ! $? -eq 0 ]; then return 0; fi
+
 	git branch --list "*$1*" --sort=authordate --format="%(authordate:format:%m-%d-%Y) %(align:17,left)%(authorname)%(end) %(refname:strip=2)" | sed \
 		-e 's/\([0-9]*-[0-9]*-[0-9]*\)/\x1b[32m\1\x1b[0m/' \
 	  -e 's/\([^ ]*\)$/\x1b[34m\1\x1b[0m/'
@@ -635,6 +677,8 @@ gll() {
 # Switch branches =======================================================================
 # check out a branch or create a new one if $2 is given
 ck+() {
+	checkgit; if [ ! $? -eq 0 ]; then return 0; fi
+
 	if [ -z $1 ]; then
 	  echo "find matching branch and checkout: \e[93mck+ <branch>\e[0m"
 	  echo "create exact branch off of matching base branch: \e[93mck+ <branch>\e[0m \e[33m<base_branch>\e[0m"
@@ -650,6 +694,8 @@ ck+() {
 }
 
 ck() {
+	checkgit; if [ ! $? -eq 0 ]; then return 0; fi
+
 	if [ -z $1 ]; then
 		echo "checkout exact branch: \e[93mck <branch>\e[0m"
 	  echo "create exact branch off of exact base branch: \e[93mck <branch>\e[0m \e[33m<base_branch>\e[0m"
@@ -751,6 +797,8 @@ ck() {
 
 # go to default branch stablished in config
 dev() {
+	checkgit; if [ ! $? -eq 0 ]; then return 0; fi
+
 	local PAST_BRANCH=$(git branch --show-current)
 
 	local DEVELOP=$(git branch -a --list | grep -w develop | sed 's/^[* ]*//g')
@@ -784,6 +832,8 @@ dev() {
 }
 
 main() {
+	checkgit; if [ ! $? -eq 0 ]; then return 0; fi
+
 	local MY_BRANCH=$(git branch --show-current)
 	local DEFAULT_MAIN_BRANCH=$(git config --get init.defaultBranch)
 	local MAIN_BRANCH="${DEFAULT_MAIN_BRANCH:-main}"
@@ -804,6 +854,8 @@ main() {
 # Merging & Rebasing ========================================================================
 # rebase $1 or main
 rebase() {
+	checkgit; if [ ! $? -eq 0 ]; then return 0; fi
+
 	local MY_BRANCH=$(git branch --show-current)
 	local DEFAULT_MAIN_BRANCH=$(git config --get init.defaultBranch)
 	local MAIN_BRANCH="${1:-$DEFAULT_MAIN_BRANCH}"
@@ -828,6 +880,8 @@ rebase() {
 
 # merge $1 or main
 merge() {
+	checkgit; if [ ! $? -eq 0 ]; then return 0; fi
+
 	local MY_BRANCH=$(git branch --show-current)
 	local DEFAULT_MAIN_BRANCH=$(git config --get init.defaultBranch)
 	local MAIN_BRANCH="${1:-$DEFAULT_MAIN_BRANCH}"
@@ -852,6 +906,8 @@ merge() {
 
 # Delete local branches ===========================================================
 prune() {
+	checkgit; if [ ! $? -eq 0 ]; then return 0; fi
+
 	local DEFAULT_MAIN_BRANCH=$(git config --get init.defaultBranch)
 
 	# local STATUS=$(git status --porcelain)
@@ -872,8 +928,15 @@ prune() {
 
 # list branches and select one to delete or delete $1
 delb() {
+	checkgit; if [ ! $? -eq 0 ]; then return 0; fi
+
 	if [[ -n "$1" ]]; then
 		delb1 $1
+		return 0;
+	fi
+
+	if [ ! -d ".git" ]; then
+		echo "\e[31mfatal:\e[0m not a project folder: $(pwd)"
 		return 0;
 	fi
 
@@ -905,6 +968,8 @@ delb() {
 }
 
 delb1() {
+	checkgit; if [ ! $? -eq 0 ]; then return 0; fi
+
 	local MY_BRANCH=$(git branch --show-current)
 	local STATUS=$(git status --porcelain)
 

@@ -329,9 +329,18 @@ pr() {
 	# echo "$PR_BODY"
 	# return 0;
 
-	local MY_BRANCH=$(git branch --show-current)
+	if [ $Z_PR_RUN_TEST -eq 1 ]; then
+		test
+
+		if [ ! $? -eq 0 ]; then
+			echo "\e[33m\nfatal: tests are not passing! cannot push!\e[0m"
+			return 0;
+		fi
+	fi
 
 	push
+
+	local MY_BRANCH=$(git branch --show-current)
 
 	if [ -z $1 ]; then
 		gh pr create -a @me --title $PR_TITLE --body $PR_BODY --web --head $MY_BRANCH
@@ -569,15 +578,6 @@ commit() {
 
 push() {
 	checkgit; if [ ! $? -eq 0 ]; then return 0; fi
-
-	if [ $Z_PR_RUN_TEST -eq 1 ]; then
-		test
-
-		if [ ! $? -eq 0 ]; then
-			echo "\e[33m\nfatal: tests are not passing! cannot push!\e[0m"
-			return 0;
-		fi
-	fi
 
 	local MY_BRANCH=$(git branch --show-current)
 

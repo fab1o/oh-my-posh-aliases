@@ -522,7 +522,7 @@ clone() {
 
 # Git =========================================================================
 alias add="git add $1"
-alias abort="GIT_EDITOR=true git rebase --abort -q && git merge --abort -q"
+alias abort="GIT_EDITOR=true git rebase --abort && git merge --abort"
 alias clean="git clean -fd -q && git restore -q ."
 alias fetch="git fetch --tags --all"
 alias pull="git pull --tags --all"

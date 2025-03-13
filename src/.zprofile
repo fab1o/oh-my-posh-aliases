@@ -39,7 +39,7 @@ help() {
 	echo "$TITLE_COR -- general ------------------------------------------------- \e[0m"
 	echo " $COMMAND_COR cl \e[0m\t\t = clear"
 	echo " $COMMAND_COR del \$1\e[0m\t = delete path"
-	echo " $COMMAND_COR h \e[0m\t\t = cd ~"
+	echo " $COMMAND_COR hg \$1 \e[0m\t = history | grep \$1"
 	echo " $COMMAND_COR ll \e[0m\t\t = ls -laF"
 	echo " $COMMAND_COR nodei \e[0m\t = info about node"
 	echo " $COMMAND_COR nlist \e[0m\t = npm list global"
@@ -59,6 +59,7 @@ help() {
 	echo " $PACKAGE_COR cov \e[0m\t\t = $Z_PACKAGE_MANAGER test:coverage"
 	echo " $PACKAGE_COR e2e \e[0m\t\t = $Z_PACKAGE_MANAGER test:e2e"
 	echo " $PACKAGE_COR e2e \$1 \e[0m\t = $Z_PACKAGE_MANAGER test:e2e project \$1"
+	echo " $PACKAGE_COR e2eui \e[0m\t = $Z_PACKAGE_MANAGER test:e2e:ui"
 	echo " $PACKAGE_COR fix \e[0m\t\t = $Z_PACKAGE_MANAGER lint + $Z_PACKAGE_MANAGER format"
 	echo " $PACKAGE_COR format \e[0m\t = $Z_PACKAGE_MANAGER format"
 	echo " $PACKAGE_COR i \e[0m\t\t = $Z_PACKAGE_MANAGER install"
@@ -78,7 +79,7 @@ help() {
 	echo " $GIT_COR delb \e[0m\t\t = delete branch selectively locally"
 	echo " $GIT_COR delb \$1\e[0m\t = delete branch locally"
 	echo " $GIT_COR fetch \e[0m\t = git fetch all"
-	echo " $GIT_COR gconf \e[0m\t\t = git config"
+	echo " $GIT_COR gconf \e[0m\t = git config"
 	echo " $GIT_COR glog \e[0m\t\t = git log"
 	echo " $GIT_COR pr \$1\e[0m\t\t = create pull request with labels \$1"
 	echo " $GIT_COR prune \e[0m\t = delete merged branches locally"
@@ -106,6 +107,8 @@ help() {
 	echo " $GIT_COR glr \$1 \e[0m\t = list remote branches matching \$1"
 	echo "$TITLE_COR -- git merge branch ---------------------------------------- \e[0m"
 	echo " $GIT_COR abort\e[0m\t\t = abort rebase/merge"
+	echo " $GIT_COR chc \e[0m\t\t = continue cherry pick"
+	echo " $GIT_COR chp \$1 \e[0m\t = cherry pick commit"
 	echo " $GIT_COR mc \e[0m\t\t = continue merge"
 	echo " $GIT_COR merge \e[0m\t = merge from default branch"
 	echo " $GIT_COR merge \$1 \e[0m\t = merge from branch"
@@ -123,7 +126,7 @@ help() {
 
 # General
 alias cl="tput reset"
-alias h="cd ~"
+alias hg="history | grep" # $1
 alias ll="ls -laF"
 alias nodei="node -e 'console.log(process.version, process.arch, process.platform)'"
 alias nlist="npm list --global --depth=0"
@@ -195,6 +198,7 @@ del() {
 
 # Project
 alias build="$Z_PACKAGE_MANAGER build"
+alias e2eui="$Z_PACKAGE_MANAGER test:e2e:ui"
 alias fix="$Z_PACKAGE_MANAGER lint && $Z_PACKAGE_MANAGER format"
 alias format="$Z_PACKAGE_MANAGER format"
 alias i="$Z_PACKAGE_MANAGER install"
@@ -530,8 +534,9 @@ clone() {
 }
 
 # Git =========================================================================
-alias add="git add $1"
-alias abort="GIT_EDITOR=true git rebase --abort && git merge --abort"
+alias add="git add" # $1
+alias chc="git cherry-pick --continue"
+alias chp="git cherry-pick" # $1
 alias clean="git clean -fd -q && git restore -q ."
 alias fetch="git fetch --tags --all"
 alias pull="git pull --tags --all"
@@ -550,6 +555,13 @@ gconf() {
 	echo "\e[33mUsername:\e[0m $(git config --get user.name)"
 	echo "\e[33mEmail:\e[0m $(git config --get user.email)"
 	echo "\e[33mDefault branch:\e[0m $(git config --get init.defaultBranch)"
+}
+
+abort() {
+	checkgit; if [ ! $? -eq 0 ]; then return 0; fi
+
+	GIT_EDITOR=true git rebase --abort
+	GIT_EDITOR=true git merge --abort
 }
 
 # Commits =======================================================================

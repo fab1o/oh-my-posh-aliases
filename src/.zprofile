@@ -264,7 +264,7 @@ pr() {
 		    # Extract commit hash, commit author, and commit message using the '|' separator
 	    local commit_hash=$(echo "$line" | cut -d'|' -f1 | xargs)
 	    local commit_author=$(echo "$line" | cut -d'|' -f2 | xargs)
-	    local commit_message=$(echo "$line" | cut -d'|' -f3- | xargs)
+	    local commit_message=$(echo "$line" | cut -d'|' -f3- | xargs -0)
 
 			# Check if the commit belongs to the current branch
 			if ! git branch --contains "$commit_hash" | grep -q "\b$CURRENT_BRANCH\b"; then
@@ -291,7 +291,7 @@ pr() {
 		# Loop through all commits in the current branch using git log (newest to oldest)
 		git log --branches --not --remotes --oneline --pretty=format:'%H | %s' | while IFS= read -r line; do
 	    local commit_hash=$(echo "$line" | cut -d'|' -f1 | xargs)
-	    local commit_message=$(echo "$line" | cut -d'|' -f2- | xargs)
+	    local commit_message=$(echo "$line" | cut -d'|' -f2- | xargs -0)
 
 		  # # Use grep with a regular expression to find all branches referencing the commit hash
 			# local branches=$(grep -R "$commit_hash" .git/refs/heads | sed 's|.*/heads/||' | cut -d: -f1 | sed 's|$|\||')

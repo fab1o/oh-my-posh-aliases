@@ -40,6 +40,7 @@ help() {
 	echo " $COMMAND_COR cl \e[0m\t\t = clear"
 	echo " $COMMAND_COR del \$1\e[0m\t = delete path"
 	echo " $COMMAND_COR hg \$1 \e[0m\t = history | grep \$1"
+	echo " $COMMAND_COR kill \$1 \e[0m\t = kill port \$1"
 	echo " $COMMAND_COR ll \e[0m\t\t = ls -laF"
 	echo " $COMMAND_COR nodei \e[0m\t = info about node"
 	echo " $COMMAND_COR nlist \e[0m\t = npm list global"
@@ -127,6 +128,7 @@ help() {
 # General
 alias cl="tput reset"
 alias hg="history | grep" # $1
+alias kill="npx kill-port" # $1
 alias ll="ls -laF"
 alias nodei="node -e 'console.log(process.version, process.arch, process.platform)'"
 alias nlist="npm list --global --depth=0"

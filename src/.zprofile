@@ -201,7 +201,7 @@ del() {
 # Project
 alias build="$Z_PACKAGE_MANAGER build"
 alias e2eui="$Z_PACKAGE_MANAGER test:e2e:ui"
-alias fix="$Z_PACKAGE_MANAGER lint && $Z_PACKAGE_MANAGER format"
+alias fix="$Z_PACKAGE_MANAGER format && $Z_PACKAGE_MANAGER lint && $Z_PACKAGE_MANAGER format"
 alias format="$Z_PACKAGE_MANAGER format"
 alias i="$Z_PACKAGE_MANAGER install"
 alias lint="$Z_PACKAGE_MANAGER lint"

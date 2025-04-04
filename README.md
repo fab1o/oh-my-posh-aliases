@@ -1,16 +1,24 @@
 # @fab1o/oh-my-posh-aliases
 
+This repository contains:
+- Oh My Posh Theme
+- Oh My Zch Aliases and Functions
+
+This theme is loosely based on [robbyrussell](https://ohmyposh.dev/docs/themes#robbyrussell) oh-my-posh's theme and a configurable set of aliases and functions to pump your Z (zsh) shell. This theme fixes an [issue](https://github.com/JanDeDobbeleer/oh-my-posh/issues/6204) with the robbyrussell's theme where the "✗" was incorrectly configured in the oh-my-posh version of robbyrussell's [original](https://github.com/ohmyzsh/ohmyzsh/blob/master/themes/robbyrussell.zsh-theme#L6) Oh My Zsh's theme.
+
+## Oh My Posh Theme
+
+Source here: [fabiocosta.omp.json](src/fabiocosta.omp.json). Follow the Setup process below.
+
 ![theme screenshot](doc/theme.png)
-
-Oh My Posh's Theme + Aliases + Functions
-
-Loosely based on [robbyrussell](https://ohmyposh.dev/docs/themes#robbyrussell) oh-my-posh's theme and a configurable set of aliases and functions to pump your Z (zsh) shell.
-
-This theme fixes an [issue](https://github.com/JanDeDobbeleer/oh-my-posh/issues/6204) with the robbyrussell's theme where the "✗" was incorrectly configured in the oh-my-posh version of robbyrussell's [original](https://github.com/ohmyzsh/ohmyzsh/blob/master/themes/robbyrussell.zsh-theme#L6) Oh My Zsh's theme.
 
 ## Aliases + Functions
 
-Support for **Z shell (Zsh) only**. Type `help` to print documentation below:
+Source here: [.zprofile](src/.zprofile) and [.zprofile_config](src/.zprofile_config). Follow the Setup process below.
+
+The Aliases and Functions can be used with Oh My Zch only, or in combination with Oh My Posh.
+
+After setup, type `help` to print this little helpful resource:
 
 ![terminal help screenshot](doc/terminal_help.png)
 
@@ -23,7 +31,7 @@ Support for **Z shell (Zsh) only**. Type `help` to print documentation below:
 
 ## Setup
 
-## Get Started
+### Get Started
 
 1. Install iTerm2
 
@@ -45,7 +53,7 @@ Support for **Z shell (Zsh) only**. Type `help` to print documentation below:
 - Install a font and configure iTerm2, [docs](https://iterm2.com/documentation-fonts.html).
   - Go to Settings > Profiles > Text > Font
 
-4. Copy the contents of [`src`](src/) to your home folder: `~/`
+4. Download the [latest version](https://github.com/fab1o/oh-my-posh-aliases/releases) or copy the contents of [`src`](src/) to your home folder: `~/`
 5. Configure oh-my-posh in your `~/.zshrc` to use theme:
 
 ```sh
@@ -60,9 +68,9 @@ eval "$(oh-my-posh init zsh --config ~/fabiocosta.omp.json)"
 
 Tailor your settings within `~/.zprofile_config` and restart or run `refresh` command to refresh your terminal.
 
-### Upgrade
+## Upgrade
 
-Considering upgrading if the version in your `.zprofile` is outdated. The version is on the 1st line of the file.
+Considering upgrading if the version in your `.zprofile` is outdated. The version is written on the 1st line of each file.
 
 1. Go to the [latest release](https://github.com/fab1o/oh-my-posh-aliases/releases), download the zip and unzip.
 

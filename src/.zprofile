@@ -9,7 +9,7 @@ local Z_PROJECT_FOLDER=$(realpath "$(eval echo $Z_PROJECT_FOLDER_)")
 local Z_PROJECT_REPO=$(sed -n 's/^Z_PROJECT_REPO=\([^ ]*\)/\1/p' $Z_CONFIG_FILE)
 local Z_PROJECT_SHORT_NAME=${$(sed -n 's/^Z_PROJECT_SHORT_NAME=\([^ ]*\)/\1/p' $Z_CONFIG_FILE):-my}
 local Z_SETUP_SCRIPT=${$(sed -n 's/^Z_SETUP_SCRIPT=\([^ ]*\)/\1/p' $Z_CONFIG_FILE)-:npm i}
-local Z_SETUP_COMMAND=$(sed -n 's/^Z_SETUP_COMMAND=\([^ ]*\)/\1/p' $Z_CONFIG_FILE)
+local Z_COPY_SETUP_FILES=$(sed -n 's/^Z_COPY_SETUP_FILES=\([^ ]*\)/\1/p' $Z_CONFIG_FILE)
 local Z_SETUP_BASH_SCRIPT_PATH=$(eval echo $(sed -n 's/^Z_SETUP_BASH_SCRIPT_PATH=\([^ ]*\)/\1/p' $Z_CONFIG_FILE))
 local Z_PULL_REQUEST_TEMPLATE=$(sed -n 's/^Z_PULL_REQUEST_TEMPLATE=\([^ ]*\)/\1/p' $Z_CONFIG_FILE)
 local Z_PR_REPLACE=$(sed -n 's/^Z_PR_REPLACE=\([^ ]*\)/\1/p' $Z_CONFIG_FILE)
@@ -18,7 +18,7 @@ local Z_PR_RUN_TEST=$(sed -n 's/^Z_PR_RUN_TEST=\([^ ]*\)/\1/p' $Z_CONFIG_FILE)
 
 if [ -z $Z_PROJECT_FOLDER ]; then
 	Z_PROJECT_FOLDER=${Z_PROJECT_FOLDER:-~}
-	echo "\e[33mwarn:\e[0m Z_PROJECT_FOLDER was not set, default to '$Z_PROJECT_FOLDER' - type \e[93mhelp\e[0m for more"
+	echo "\e[33mwarn:\e[0m Z_PROJECT_FOLDER was not set, edit it in '~/.zprofile_config' - default: '$Z_PROJECT_FOLDER'"
 fi
 
 if [ ! -d "$Z_PROJECT_FOLDER" ]; then
@@ -50,7 +50,7 @@ help() {
 	echo "$TITLE_COR -- $Z_PROJECT_SHORT_NAME ----------------------------------------------------- \e[0m"
 	echo " $PROJECT_COR $Z_PROJECT_SHORT_NAME \e[0m\t\t = cd $Z_PROJECT_FOLDER_"
 	echo " $PROJECT_COR clonep \$1\e[0m\t = clone $Z_PROJECT_SHORT_NAME to folder"
-	echo " $PROJECT_COR setup \e[0m\t = $Z_SETUP_SCRIPT + Z_SETUP_COMMAND"
+	echo " $PROJECT_COR setup \e[0m\t = $Z_SETUP_SCRIPT + Z_COPY_SETUP_FILES"
 	echo " $PROJECT_COR rev \$1\e[0m\t = review $Z_PROJECT_SHORT_NAME branch"
 	echo " $PROJECT_COR rev+ \$1\e[0m\t = find and review $Z_PROJECT_SHORT_NAME branch"
 	echo " $PROJECT_COR run \e[0m\t\t = Z_RUN_DEV"
@@ -77,19 +77,21 @@ help() {
 	echo " $GIT_COR clone \$1 \$2\e[0m\t = clone project to folder"
 	echo " $GIT_COR commit \$1\e[0m\t = commit message"
 	echo " $GIT_COR commita \$1\e[0m\t = add + commit message"
-	echo " $GIT_COR delb \e[0m\t\t = delete branch selectively locally"
+	echo " $GIT_COR delb \e[0m\t\t = delete branches selectively locally"
 	echo " $GIT_COR delb \$1\e[0m\t = delete branch locally"
 	echo " $GIT_COR fetch \e[0m\t = git fetch all"
 	echo " $GIT_COR gconf \e[0m\t = git config"
 	echo " $GIT_COR glog \e[0m\t\t = git log"
 	echo " $GIT_COR pr \$1\e[0m\t\t = create pull request with labels \$1"
-	echo " $GIT_COR prune \e[0m\t = delete merged branches locally"
+	echo " $GIT_COR prune \e[0m\t = delete tags and merged branches"
 	echo " $GIT_COR pull \e[0m\t\t = git pull all"
 	echo " $GIT_COR push \e[0m\t\t = git push no-verify + tags"
 	echo " $GIT_COR pushf \e[0m\t = git push + force"
+	echo " $GIT_COR renb \$1\e[0m\t = rename current branch to \$1"
 	echo " $GIT_COR stash \$1 \e[0m\t = stash all files"
 	echo " $GIT_COR st \e[0m\t\t = git status"
-	echo " $GIT_COR tag \$1\e[0m\t = create tag"
+	echo " $GIT_COR tag \$1\e[0m\t = create tag remotely"
+	echo " $GIT_COR dtag \$1\e[0m\t = delete tag remotely"
 	echo " $GIT_COR ltag \e[0m\t\t = display latest tag"
 	echo " $GIT_COR tags \e[0m\t\t = list all tags"
 	echo "$TITLE_COR -- git clean branch ---------------------------------------- \e[0m"
@@ -107,7 +109,7 @@ help() {
 	echo " $GIT_COR glr \e[0m\t\t = list remote branches"
 	echo " $GIT_COR glr \$1 \e[0m\t = list remote branches matching \$1"
 	echo "$TITLE_COR -- git merge branch ---------------------------------------- \e[0m"
-	echo " $GIT_COR abort\e[0m\t\t = abort rebase/merge"
+	echo " $GIT_COR abort\e[0m\t\t = abort rebase/merge/cherry pick"
 	echo " $GIT_COR chc \e[0m\t\t = continue cherry pick"
 	echo " $GIT_COR chp \$1 \e[0m\t = cherry pick commit"
 	echo " $GIT_COR mc \e[0m\t\t = continue merge"
@@ -122,14 +124,14 @@ help() {
 	echo " $GIT_COR ck \$1 \$2 \e[0m\t = create branch off of \$2"
 	echo " $GIT_COR ck+ \$1 \$2 \e[0m\t = find and create branch off of \$2"
 	echo " $GIT_COR dev \e[0m\t\t = checkout dev branch"
-	echo " $GIT_COR main \e[0m\t\t = checkout default/main branch"
+	echo " $GIT_COR main \e[0m\t\t = checkout $(git config --get init.defaultBranch) branch"
 }
 
 # General
 alias cl="tput reset"
 alias hg="history | grep" # $1
 alias kill="npx kill-port" # $1
-alias ll="ls -laF"
+alias ll="ls -lAF"
 alias nodei="node -e 'console.log(process.version, process.arch, process.platform)'"
 alias nlist="npm list --global --depth=0"
 alias path="echo $PATH"
@@ -200,7 +202,7 @@ del() {
 
 # Project
 alias build="$Z_PACKAGE_MANAGER build"
-alias e2eui="$Z_PACKAGE_MANAGER test:e2e:ui"
+alias e2eui="$Z_PACKAGE_MANAGER test:e2e-ui"
 alias fix="$Z_PACKAGE_MANAGER format && $Z_PACKAGE_MANAGER lint && $Z_PACKAGE_MANAGER format"
 alias format="$Z_PACKAGE_MANAGER format"
 alias i="$Z_PACKAGE_MANAGER install"
@@ -218,8 +220,8 @@ cov() {
 	checkgit; if [ ! $? -eq 0 ]; then return 0; fi
 
 	mkdir -p coverage
-	$Z_PACKAGE_MANAGER test:coverage --colors > coverage/report.ansi
-	open ./coverage/report.ansi -a "Sublime Text"
+	$Z_PACKAGE_MANAGER test:coverage --colors &> coverage/report.ans
+	open ./coverage/report.ans -a "Visual Studio Code"
 }
 
 e2e() {
@@ -235,13 +237,6 @@ e2e() {
 # Creating PRs =============================================================
 pr() {
 	checkgit; if [ ! $? -eq 0 ]; then return 0; fi
-
-	local STATUS=$(git status --porcelain)
-
-	if [[ -n "$STATUS" ]]; then
-		echo "\e[33mwarn:\e[0m there's work in progress, execute: \e[93mpush\e[0m, \e[93mpushf\e[0m, \e[93mclean\e[0m or \e[93mreseta\e[0m"
-		return 0
-	fi
 
 	# Initialize an empty string to store the commit details
 	local COMMIT_MSGS=""
@@ -260,7 +255,7 @@ pr() {
 		local origin_head_commit=$(git rev-parse origin/HEAD)
 
 		# Loop through all commits in the current branch using git log (newest to oldest)
-		git log --pretty=format:'%H | %ae | %s' $CURRENT_BRANCH | while IFS= read -r line; do
+		git log --pretty=format:'%H | %ae | %s' $CURRENT_BRANCH | xargs -0 | while IFS= read -r line; do
 		    # Extract commit hash, commit author, and commit message using the '|' separator
 	    local commit_hash=$(echo "$line" | cut -d'|' -f1 | xargs)
 	    local commit_author=$(echo "$line" | cut -d'|' -f2 | xargs)
@@ -289,7 +284,7 @@ pr() {
 		# Local branch has not yet been pushed to remote
 
 		# Loop through all commits in the current branch using git log (newest to oldest)
-		git log --branches --not --remotes --oneline --pretty=format:'%H | %s' | while IFS= read -r line; do
+		git log --branches --not --remotes --oneline --pretty=format:'%H | %s' | xargs -0 | while IFS= read -r line; do
 	    local commit_hash=$(echo "$line" | cut -d'|' -f1 | xargs)
 	    local commit_message=$(echo "$line" | cut -d'|' -f2- | xargs -0)
 
@@ -336,12 +331,24 @@ pr() {
 	# return 0;
 
 	if [ $Z_PR_RUN_TEST -eq 1 ]; then
-		test
+		local STATUS=$(git status --porcelain)
 
-		if [ ! $? -eq 0 ]; then
-			echo "\e[33m\nfatal: tests are not passing! cannot push!\e[0m"
-			return 0;
-		fi
+		if [[ -n "$STATUS" ]]; then
+			st
+			echo .
+			if read -qs "?skip test? (y/n) "; then
+		    echo "y"
+		  else
+		  	echo "n"
+				return 0;
+		  fi
+		else
+			test
+			if [ ! $? -eq 0 ]; then
+				echo "\e[33m\nfatal: tests are not passing! cannot push!\e[0m"
+				return 0;
+			fi
+	  fi
 	fi
 
 	push
@@ -389,7 +396,6 @@ setup() {
 	checkgit; if [ ! $? -eq 0 ]; then return 0; fi
 
 	eval $Z_SETUP_SCRIPT
-	eval $Z_SETUP_COMMAND
 
 	if [ ! -z $Z_SETUP_BASH_SCRIPT_PATH ]; then
 		if [ -f "$Z_SETUP_BASH_SCRIPT_PATH" ]; then
@@ -480,6 +486,7 @@ rev() {
 
 	clonep "$BRANCH_PATH" $BRANCH
 	setup
+	eval $Z_COPY_SETUP_FILES
   code .
 }
 
@@ -497,6 +504,7 @@ clonep() {
 
   cd "$1"
 	echo "opened $(pwd)"
+	eval $Z_COPY_SETUP_FILES
 
 	if [ ! -z $2 ]; then
 		ck $2
@@ -540,17 +548,18 @@ alias add="git add" # $1
 alias chc="git cherry-pick --continue"
 alias chp="git cherry-pick" # $1
 alias clean="git clean -fd -q && git restore -q ."
-alias fetch="git fetch --tags --all"
-alias pull="git pull --tags --all"
-alias pushf="git push --no-verify --tags --force-with-lease"
+alias fetch="git fetch --all && git fetch --tags --all"
+alias pull="git pull --all && git pull --tags --all"
+alias pushf="git push --no-verify --tags --force"
+alias renb="git branch -m" # $1
 alias glog="clear && git log -15 --graph --abbrev-commit --pretty=format:'%C(magenta)%h%Creset ~%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset'"
 alias mc="git add . && git merge --continue"
 alias rc="git add . && git rebase --continue"
-alias reset1="git reset --soft HEAD~1"
-alias reset2="git reset --soft HEAD~2"
-alias reset3="git reset --soft HEAD~3"
-alias reset4="git reset --soft HEAD~4"
-alias reset5="git reset --soft HEAD~5"
+alias reset1="git log -1 --pretty=format:'%s' | xargs -0 && git reset --soft HEAD~1"
+alias reset2="git log -2 --pretty=format:'%s' | xargs -0 && git reset --soft HEAD~2"
+alias reset3="git log -3 --pretty=format:'%s' | xargs -0 && git reset --soft HEAD~3"
+alias reset4="git log -4 --pretty=format:'%s' | xargs -0 && git reset --soft HEAD~4"
+alias reset5="git log -5 --pretty=format:'%s' | xargs -0 && git reset --soft HEAD~5"
 alias st="git status"
 
 gconf() {
@@ -564,6 +573,7 @@ abort() {
 
 	GIT_EDITOR=true git rebase --abort
 	GIT_EDITOR=true git merge --abort
+	GIT_EDITOR=true git cherry-pick --abort
 }
 
 # Commits =======================================================================
@@ -604,6 +614,17 @@ stash() {
 	git stash push --include-untracked --message "${1:-.}"
 }
 
+dtag() {
+	checkgit; if [ ! $? -eq 0 ]; then return 0; fi
+
+	if [[ -z $1 ]]; then
+		echo "delete tag: \e[93mdtag <name>\e[0m"
+		return 0;
+	fi
+	git tag -d $1
+	git push origin --delete $1
+}
+
 tag() {
 	checkgit; if [ ! $? -eq 0 ]; then return 0; fi
 
@@ -615,6 +636,7 @@ tag() {
 	fi
 
 	git tag --annotate $1 --message $1
+	git push --no-verify --tags
 }
 
 ltag() {
@@ -720,7 +742,9 @@ ck() {
 
 	local STATUS=$(git status --porcelain)
 	if [[ -n "$STATUS" ]]; then # clean status
-		echo "\e[33mwarn:\e[0m there's work in progress, execute: \e[93mpush\e[0m, \e[93mpushf\e[0m, \e[93mclean\e[0m or \e[93mreseta\e[0m"
+		st
+		echo .
+		echo "execute: \e[93mpush\e[0m, \e[93mpushf\e[0m, \e[93mclean\e[0m or \e[93mreseta\e[0m"
 		return 0;
 	fi
 
@@ -989,8 +1013,15 @@ delb1() {
 
 	if [[ "$1" == "$MY_BRANCH" ]]; then
 		if [[ -n "$STATUS" ]]; then
-			echo "\e[33mwarn:\e[0m trying to delete current branch but there's work in progress, execute: \e[93mpush\e[0m, \e[93mpushf\e[0m, \e[93mclean\e[0m or \e[93mreseta\e[0m"
-			return 0
+			st
+			echo .
+			if read -qs "?delete current branch? (y/n) "; then
+		    echo "y"
+		    reseta
+		  else
+		  	echo "n"
+				return 0;
+		  fi
 		fi
 
 		local DEFAULT_MAIN_BRANCH=$(git config --get init.defaultBranch)

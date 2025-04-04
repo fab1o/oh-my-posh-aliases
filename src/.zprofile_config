@@ -11,7 +11,7 @@ Z_RUN_DEV=npm run dev
 
 # Folder path to my project.
 # default: ~/
-Z_PROJECT_FOLDER=~/Developer/oh-my-posh-aliases
+Z_PROJECT_FOLDER=
 
 # Repository uri
 # default: git@github.com:fab1o/oh-my-posh-aliases.git
@@ -25,10 +25,10 @@ Z_PROJECT_SHORT_NAME=my
 # default: npm i
 Z_SETUP_SCRIPT=npm i
 
-# commands to run via eval, if any, after 'Z_SETUP_SCRIPT'
+# commands to run via eval, if any, after clone or setup
 # example: cd /setup && sh setup && echo 'done'
 # PWD is the path of the cloned project in which the folder path is given by you.
-Z_SETUP_COMMAND=
+Z_COPY_SETUP_FILES=
 
 # a bash script path to run, if any and if file exists, after 'Z_PROJECT_SETUP_SCRIPT'
 # example: ./some_script.sh
@@ -46,6 +46,6 @@ Z_PR_REPLACE=Description:
 # default: 0
 Z_PR_APPEND=1
 
-# 1 to run test before pushing code and creating a pr or 0 to not run tests
+# 1 to run tests before pushing code and creating a pr or 0 to not run tests
 # default: 0
-Z_PR_RUN_TEST=0
+Z_PR_RUN_TEST=1

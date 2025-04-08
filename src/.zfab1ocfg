@@ -1,14 +1,13 @@
-# Version 1.4.0
+# Version 2.0.0
 
 # Folder path to projects:
-# example: ~/Developer/my_project
 Z_PROJECT_FOLDER_1=~/Developer/fabio/oh-my-posh-aliases
 Z_PROJECT_FOLDER_2=
 Z_PROJECT_FOLDER_3=
 
 # Short name for each project:
 # make it short, use abbreviation and one word only.
-Z_PROJECT_SHORT_NAME_1=posh
+Z_PROJECT_SHORT_NAME_1=fab1o
 Z_PROJECT_SHORT_NAME_2=
 Z_PROJECT_SHORT_NAME_3=
 
@@ -26,17 +25,23 @@ Z_PACKAGE_MANAGER_1=yarn
 Z_PACKAGE_MANAGER_2=
 Z_PACKAGE_MANAGER_3=
 
-# Commands to run with alias: setup
-# Use it to customize the setup process
-Z_SETUP_1=yarn install && echo 'setup completed'
+# Commands to run with alias: setup 
+# Use it to customize the setup process on project folder
+Z_SETUP_1=yarn install; echo 'Setup completed!'
 Z_SETUP_2=
 Z_SETUP_3=
 
-# Commands to run for each project with alias: run
-# Use it to customize the run process
+# Commands to run for each project with alias: run 
+# Use it to customize the run process on project folder
 Z_RUN_1=yarn start
 Z_RUN_2=
 Z_RUN_3=
+
+# Command to run with alias: pro 
+# Use it to customize the switch of projects
+Z_PRO_1=nvm use 22
+Z_PRO_2=
+Z_PRO_3=
 
 # pull request template of each project.
 Z_PR_TEMPLATE_1=.github/pull_request_template.md
@@ -49,7 +54,7 @@ Z_PR_REPLACE_2=
 Z_PR_REPLACE_3=
 
 # 1 to append commit messages to Z_PR_REPLACE or 0 to replace it.
-Z_PR_APPEND_2=0
+Z_PR_APPEND_1=0
 Z_PR_APPEND_2=0
 Z_PR_APPEND_3=0
 

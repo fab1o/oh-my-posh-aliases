@@ -15,8 +15,7 @@
   "scripts": {
     "dev": "npm start",
     "start": "node test",
-    "test": "node test",
-    "test:coverage": "echo '\n[36mRunning tests with coverage...[39m' && echo '' && npm test"
+    "test": "node test"
   },
-  "version": "1.0.0"
+  "version": "2.0.0"
 }

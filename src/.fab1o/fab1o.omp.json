@@ -87,21 +87,21 @@
           "style": "plain",
           "template": "<b> {{.FormattedMs}}</b>",
           "type": "executiontime"
-        },
-        {
-          "type": "status",
-          "style": "plain",
-          "foreground": "p:purple",
-          "background": "transparent",
-          "foreground_templates": [
-            "{{ if .Error }}p:gruvred{{ end }}"
-          ],
-          // https://jrgraphix.net/r/Unicode/2700-27BF
-          "template": "<b>{{ if gt .Code 0 }}\u2717{{ else }}\u2713{{ end }}</b>",
-          "properties": {
-            "always_enabled": true
-          }
         }
+        // ,{
+        //   "type": "status",
+        //   "style": "plain",
+        //   "foreground": "p:purple",
+        //   "background": "transparent",
+        //   "foreground_templates": [
+        //     "{{ if .Error }}p:gruvred{{ end }}"
+        //   ],
+        //   // https://jrgraphix.net/r/Unicode/2700-27BF
+        //   "template": "<b>{{ if gt .Code 0 }}\u2717{{ else }}\u2713{{ end }}</b>",
+        //   "properties": {
+        //     "always_enabled": true
+        //   }
+        // }
       ],
       "type": "prompt"
     }
